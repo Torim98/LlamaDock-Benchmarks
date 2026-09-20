@@ -1,0 +1,37 @@
+# Veröffentlicht diese Seite auf GitHub Pages.
+# Voraussetzung: öffentliches Repo und Settings → Pages → Source „GitHub Actions“.
+# Die Daten erzeugt LlamaDock (privates Repo) lokal:
+#   node scripts/export-site.mjs
+# (nur freigegebene Läufe, mit Datenschutz-Prüfung) und schreibt sie hierher.
+name: Benchmark-Website
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Daten vorhanden?
+        run: test -f data/index.json || (echo "data/index.json fehlt: erst node scripts/export-site.mjs in LlamaDock ausführen" && exit 1)
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: .
+      - id: deployment
+        uses: actions/deploy-pages@v4

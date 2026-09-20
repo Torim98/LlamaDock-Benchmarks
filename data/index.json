@@ -1,0 +1,347 @@
+{
+  "generatedAt": "2026-09-20T05:29:38.189Z",
+  "scenarios": {
+    "game": {
+      "id": "game",
+      "name": "Snake in einer HTML-Datei",
+      "version": 1,
+      "description": "Ein spielbares Snake auf Canvas in einer einzigen HTML-Datei. Prüft Spiellogik, Steuerung und Fehlerfreiheit.",
+      "prompt": "Programmiere im aktuellen Verzeichnis das Spiel **Snake** als **eine einzige Datei `index.html`** (HTML, CSS und JavaScript inline, keine externen Bibliotheken, kein Build-Schritt).\n\nAnforderungen:\n\n1. Spielfeld als `<canvas>`, Raster 20 × 20 Felder, gut sichtbar zentriert.\n2. Steuerung mit den Pfeiltasten. Eine direkte 180°-Wende (z. B. von rechts nach links) ist nicht erlaubt.\n3. Start mit Leertaste oder Enter; vorher steht ein kurzer Hinweis auf dem Spielfeld. `P` pausiert und setzt fort.\n4. Futter erscheint zufällig auf einem freien Feld. Frisst die Schlange es, wächst sie um ein Glied und der Punktestand steigt um 1.\n5. Der Punktestand steht sichtbar über dem Spielfeld als „Punkte: N“. Der Highscore wird in `localStorage` gespeichert und angezeigt.\n6. Berührt die Schlange die Wand oder sich selbst, ist das Spiel vorbei: „Game Over“ erscheint, Leertaste/Enter startet neu.\n7. Das Tempo steigt leicht mit jedem gefressenen Futter.\n8. Keine Konsolenfehler.\n\nWenn du fertig bist, antworte mit einem Satz, was du gebaut hast.\n",
+      "rubric": [
+        {
+          "id": "playable",
+          "label": "Spielbar",
+          "hint": "Macht Spaß, flüssig, Tempo passt"
+        },
+        {
+          "id": "rules",
+          "label": "Regeln korrekt",
+          "hint": "Wachsen, Punkte, Kollision mit Wand und sich selbst, Neustart"
+        },
+        {
+          "id": "bugs",
+          "label": "Fehlerfrei",
+          "hint": "Keine Glitches (z. B. 180°-Wende, Futter in der Schlange)"
+        },
+        {
+          "id": "design",
+          "label": "Optik",
+          "hint": "Sauberes, lesbares Design"
+        }
+      ],
+      "checks": [
+        {
+          "id": "entry",
+          "label": "index.html existiert",
+          "type": "file-exists"
+        },
+        {
+          "id": "single",
+          "label": "Kein externes Skript (alles in einer Datei)",
+          "type": "script"
+        },
+        {
+          "id": "load",
+          "label": "Lädt ohne Konsolenfehler",
+          "type": "loads-without-errors"
+        },
+        {
+          "id": "canvas",
+          "label": "Spielfeld ist ein <canvas>",
+          "type": "selector"
+        },
+        {
+          "id": "score",
+          "label": "Punktestand wird angezeigt",
+          "type": "script"
+        },
+        {
+          "id": "start",
+          "label": "Startet per Taste und bewegt sich",
+          "type": "keys-change-canvas"
+        },
+        {
+          "id": "steer",
+          "label": "Pfeiltasten verändern das Spielfeld",
+          "type": "keys-change-canvas"
+        },
+        {
+          "id": "pause",
+          "label": "P pausiert (Spielfeld bleibt stehen)",
+          "type": "script"
+        },
+        {
+          "id": "gameover",
+          "label": "Game Over, wenn die Schlange die Wand trifft (Text oder Spielfeld steht still)",
+          "type": "script"
+        }
+      ]
+    },
+    "website": {
+      "id": "website",
+      "name": "Landingpage nach Spezifikation",
+      "version": 1,
+      "description": "Eine responsive Landingpage für ein fiktives Produkt, nur HTML/CSS/JS ohne Build-Schritt. Prüft Spezifikationstreue, sauberes Markup und Optik.",
+      "prompt": "Baue im aktuellen Verzeichnis eine Landingpage für die fiktive App **„Nachtfalter“**, einen Schlaf-Tracker, der ohne Cloud auskommt.\n\nAnforderungen:\n\n1. Eine Datei `index.html` (CSS und JavaScript dürfen inline oder in `style.css` / `script.js` liegen). Keine Frameworks, keine CDNs, kein Build-Schritt. Die Seite muss direkt im Browser funktionieren.\n2. Dunkles Design (Nachtblau/Violett), gut lesbar, moderne Optik.\n3. Abschnitte in dieser Reihenfolge:\n   - Kopfzeile mit Logo-Schriftzug „Nachtfalter“ und Navigation mit Links auf `#features`, `#pricing` und `#contact`.\n   - Hero mit `<h1>`, einem Satz Untertitel und einem Button „Kostenlos testen“.\n   - `<section id=\"features\">` mit genau drei Features (je Überschrift + ein Satz): „Offline-first“, „Sanfter Wecker“, „Schlafphasen“.\n   - `<section id=\"pricing\">` mit drei Plänen als Karten mit Klasse `plan`: „Basis“ (0 €), „Plus“ (3 €/Monat), „Familie“ (6 €/Monat). Der Plan „Plus“ ist hervorgehoben.\n   - `<section id=\"contact\">` mit einem Formular: Name, E-Mail (`type=\"email\"`), Nachricht, Absenden-Button. Beim Absenden wird **nicht** neu geladen: Ungültige E-Mail → Fehlermeldung direkt am Feld, gültige Eingaben → Dankesmeldung statt des Formulars.\n   - Fußzeile mit „© 2026 Nachtfalter“.\n4. Responsiv: Auf 375 px Breite darf nichts horizontal überlaufen, die Pläne stehen dann untereinander.\n5. Keine Konsolenfehler.\n\nWenn du fertig bist, antworte mit einer kurzen Liste der erstellten Dateien.\n",
+      "rubric": [
+        {
+          "id": "requirements",
+          "label": "Anforderungen erfüllt",
+          "hint": "Alle Abschnitte und Inhalte aus der Spezifikation vorhanden und korrekt"
+        },
+        {
+          "id": "quality",
+          "label": "Code-Qualität",
+          "hint": "Semantisches HTML, aufgeräumtes CSS, keine toten Reste"
+        },
+        {
+          "id": "design",
+          "label": "Optik",
+          "hint": "Stimmiges Design, Typografie, Abstände, Dark Theme wie gefordert"
+        },
+        {
+          "id": "responsive",
+          "label": "Responsiv",
+          "hint": "Handy und Desktop sehen gut aus"
+        }
+      ],
+      "checks": [
+        {
+          "id": "entry",
+          "label": "index.html existiert",
+          "type": "file-exists"
+        },
+        {
+          "id": "load",
+          "label": "Lädt ohne Konsolenfehler",
+          "type": "loads-without-errors"
+        },
+        {
+          "id": "hero",
+          "label": "Hero mit Überschrift (h1)",
+          "type": "selector"
+        },
+        {
+          "id": "title",
+          "label": "Produktname „Nachtfalter“ steht auf der Seite",
+          "type": "text-contains"
+        },
+        {
+          "id": "features",
+          "label": "Mindestens 3 Features in #features",
+          "type": "selector-count"
+        },
+        {
+          "id": "pricing",
+          "label": "3 Preispläne in #pricing",
+          "type": "selector-count"
+        },
+        {
+          "id": "form",
+          "label": "Formular mit E-Mail-Feld",
+          "type": "selector"
+        },
+        {
+          "id": "form-validate",
+          "label": "Formular: Fehler bei ungültiger E-Mail, Dank bei gültiger, ohne Neuladen",
+          "type": "script"
+        },
+        {
+          "id": "mobile",
+          "label": "Kein horizontales Scrollen bei 375 px",
+          "type": "no-horizontal-scroll"
+        },
+        {
+          "id": "nav",
+          "label": "Navigation verlinkt auf #features, #pricing, #contact",
+          "type": "script"
+        }
+      ]
+    }
+  },
+  "models": {},
+  "recipes": {
+    "bonsai-2-27b": {
+      "name": "Bonsai 2 27B (PrismML, ternär)",
+      "hfRepo": "prism-ml/Ternary-Bonsai-2-27B-gguf",
+      "license": "apache-2.0",
+      "sources": [
+        {
+          "label": "Hugging Face: prism-ml/Ternary-Bonsai-2-27B-gguf",
+          "url": "https://huggingface.co/prism-ml/Ternary-Bonsai-2-27B-gguf"
+        },
+        {
+          "label": "PrismML-Eng/Bonsai-demo",
+          "url": "https://github.com/PrismML-Eng/Bonsai-demo"
+        },
+        {
+          "label": "PrismML-Eng/llama.cpp (Releases)",
+          "url": "https://github.com/PrismML-Eng/llama.cpp/releases"
+        }
+      ]
+    },
+    "gemma-4-31b": {
+      "name": "Gemma 4 31B (Google, dicht)",
+      "hfRepo": "unsloth/gemma-4-31B-it-GGUF",
+      "license": "apache-2.0",
+      "sources": [
+        {
+          "label": "Hugging Face: google/gemma-4-31B-it",
+          "url": "https://huggingface.co/google/gemma-4-31B-it"
+        },
+        {
+          "label": "Hugging Face: unsloth/gemma-4-31B-it-qat-GGUF",
+          "url": "https://huggingface.co/unsloth/gemma-4-31B-it-qat-GGUF"
+        },
+        {
+          "label": "Hugging Face: unsloth/gemma-4-31B-it-GGUF",
+          "url": "https://huggingface.co/unsloth/gemma-4-31B-it-GGUF"
+        }
+      ]
+    },
+    "qwen3.8-27b-uncensored": {
+      "name": "Qwen3.8 27B Uncensored",
+      "hfRepo": "JonathanColetti/Qwen3.8-27B-Uncensored-GGUF",
+      "license": "apache-2.0",
+      "sources": [
+        {
+          "label": "Hugging Face: JonathanColetti/Qwen3.8-27B-Uncensored-GGUF",
+          "url": "https://huggingface.co/JonathanColetti/Qwen3.8-27B-Uncensored-GGUF"
+        },
+        {
+          "label": "Model Card Qwen/Qwen3.8-27B (Sampling)",
+          "url": "https://huggingface.co/Qwen/Qwen3.8-27B"
+        }
+      ]
+    },
+    "qwen3.8-27b": {
+      "name": "Qwen3.8 27B (offiziell, Unsloth-Quants)",
+      "hfRepo": "unsloth/Qwen3.8-27B-GGUF",
+      "license": "apache-2.0",
+      "sources": [
+        {
+          "label": "Hugging Face: unsloth/Qwen3.8-27B-GGUF",
+          "url": "https://huggingface.co/unsloth/Qwen3.8-27B-GGUF"
+        },
+        {
+          "label": "Model Card Qwen/Qwen3.8-27B",
+          "url": "https://huggingface.co/Qwen/Qwen3.8-27B"
+        }
+      ]
+    },
+    "qwen3.8-flash-next": {
+      "name": "Qwen3.8 Flash Next (Unsloth-Quants)",
+      "hfRepo": "unsloth/Qwen3.8-Flash-Next-GGUF",
+      "license": "qwen-community-1.0",
+      "sources": [
+        {
+          "label": "Hugging Face: unsloth/Qwen3.8-Flash-Next-GGUF",
+          "url": "https://huggingface.co/unsloth/Qwen3.8-Flash-Next-GGUF"
+        },
+        {
+          "label": "Unsloth: Qwen3.8-Flash-Next lokal ausführen",
+          "url": "https://unsloth.ai/docs/models/qwen3.8-next"
+        },
+        {
+          "label": "llama.cpp PR #27742 (qwen4exp)",
+          "url": "https://github.com/ggml-org/llama.cpp/pull/27742"
+        }
+      ]
+    }
+  },
+  "external": {
+    "qwen3.8-27b": [
+      {
+        "benchmark": "LiveCodeBench v6",
+        "value": 90.3,
+        "source": "https://huggingface.co/Qwen/Qwen3.8-27B",
+        "date": "2026-09-19",
+        "note": "offizielles Modell (BF16), Thinking"
+      },
+      {
+        "benchmark": "Terminal Bench 2.1 (Terminus)",
+        "value": 73,
+        "source": "https://huggingface.co/Qwen/Qwen3.8-27B",
+        "date": "2026-09-19"
+      },
+      {
+        "benchmark": "SWE-bench Pro",
+        "value": 61.7,
+        "source": "https://huggingface.co/Qwen/Qwen3.8-27B",
+        "date": "2026-09-19"
+      },
+      {
+        "benchmark": "GPQA Diamond",
+        "value": 89.2,
+        "source": "https://huggingface.co/Qwen/Qwen3.8-27B",
+        "date": "2026-09-19"
+      },
+      {
+        "benchmark": "IFBench",
+        "value": 79.5,
+        "source": "https://huggingface.co/Qwen/Qwen3.8-27B",
+        "date": "2026-09-19"
+      },
+      {
+        "benchmark": "HLE",
+        "value": 30.8,
+        "source": "https://huggingface.co/Qwen/Qwen3.8-27B",
+        "date": "2026-09-19"
+      }
+    ],
+    "qwen3.8-27b-uncensored": [
+      {
+        "benchmark": "Basismodell",
+        "value": null,
+        "source": "https://huggingface.co/JonathanColetti/Qwen3.8-27B-Uncensored-GGUF",
+        "date": "2026-09-19",
+        "note": "Abliterierte Variante von Qwen3.8-27B; keine eigenen Benchmarks veröffentlicht, Werte des Basismodells siehe qwen3.8-27b"
+      }
+    ],
+    "bonsai-2-27b": [
+      {
+        "benchmark": "Ø 14 Thinking-Benchmarks",
+        "value": 84.78,
+        "source": "https://huggingface.co/prism-ml/Ternary-Bonsai-2-27B-gguf",
+        "date": "2026-09-19",
+        "note": "FP16-Basis 86,32 → 98,2 %"
+      },
+      {
+        "benchmark": "LiveCodeBench",
+        "value": 90.07,
+        "source": "https://huggingface.co/prism-ml/Ternary-Bonsai-2-27B-gguf",
+        "date": "2026-09-19",
+        "note": "FP16: 90,05"
+      },
+      {
+        "benchmark": "HumanEval+",
+        "value": 95.12,
+        "source": "https://huggingface.co/prism-ml/Ternary-Bonsai-2-27B-gguf",
+        "date": "2026-09-19",
+        "note": "FP16: 93,29"
+      },
+      {
+        "benchmark": "IFEval",
+        "value": 91.31,
+        "source": "https://huggingface.co/prism-ml/Ternary-Bonsai-2-27B-gguf",
+        "date": "2026-09-19",
+        "note": "FP16: 91,50"
+      },
+      {
+        "benchmark": "BFCL v3",
+        "value": 74.92,
+        "source": "https://huggingface.co/prism-ml/Ternary-Bonsai-2-27B-gguf",
+        "date": "2026-09-19",
+        "note": "FP16: 76,74"
+      },
+      {
+        "benchmark": "MMLU-Redux",
+        "value": 89.09,
+        "source": "https://huggingface.co/prism-ml/Ternary-Bonsai-2-27B-gguf",
+        "date": "2026-09-19",
+        "note": "FP16: 91,46"
+      }
+    ]
+  },
+  "runs": []
+}
