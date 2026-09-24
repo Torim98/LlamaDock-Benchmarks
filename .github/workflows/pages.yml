@@ -28,7 +28,8 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Daten vorhanden?
-        run: test -f data/index.json || (echo "data/index.json fehlt: erst node scripts/export-site.mjs in LlamaDock ausführen" && exit 1)
+        run: |
+          test -f data/index.json || { echo "data/index.json fehlt - erst 'node scripts/export-site.mjs' in LlamaDock ausfuehren"; exit 1; }
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:
