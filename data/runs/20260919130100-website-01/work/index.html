@@ -1,0 +1,668 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Nachtfalter – der Schlaf-Tracker, der ohne Cloud auskommt. Alle Daten bleiben auf deinem Gerät.">
+  <title>Nachtfalter – Schlaf-Tracker ohne Cloud</title>
+  <style>
+    :root {
+      --bg: #0a0d1e;
+      --bg-deep: #070913;
+      --surface: #131a30;
+      --surface-2: #1a2140;
+      --border: #242c50;
+      --text: #eae9f6;
+      --muted: #9a97bd;
+      --violet: #8b7be8;
+      --blue: #4f7cff;
+      --success: #43e89b;
+      --error: #ff7a7a;
+      --radius: 14px;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html { scroll-behavior: smooth; scroll-padding-top: 96px; }
+
+    @media (max-width: 430px) {
+      html { scroll-padding-top: 120px; }
+    }
+
+    body {
+      font-family: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background-color: var(--bg);
+      background-image:
+        radial-gradient(900px 520px at 18% -12%, rgba(79, 124, 255, 0.16), transparent 60%),
+        radial-gradient(820px 520px at 88% -18%, rgba(139, 123, 232, 0.18), transparent 60%),
+        radial-gradient(1200px 640px at 50% 120%, rgba(27, 33, 64, 0.9), transparent 70%);
+      background-attachment: fixed;
+      background-repeat: no-repeat;
+      background-size: cover;
+      color: var(--text);
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+      overflow-x: hidden;
+    }
+
+    .wrap { width: 100%; max-width: 1100px; margin: 0 auto; padding: 0 20px; }
+
+    /* ---------- Header ---------- */
+    .site-header {
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      background-color: rgba(10, 13, 30, 0.86);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .nav {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      min-height: 64px;
+      padding-top: 12px;
+      padding-bottom: 12px;
+    }
+
+    .logo {
+      font-size: 1.25rem;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      color: var(--text);
+      text-decoration: none;
+      white-space: nowrap;
+    }
+    .logo span {
+      display: block;
+      font-size: 0.62rem;
+      font-weight: 500;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-top: 2px;
+    }
+    .logo-word {
+      display: block;
+      background: linear-gradient(95deg, var(--violet), var(--blue));
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+      line-height: 1.1;
+    }
+
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      list-style: none;
+    }
+    .nav-links a {
+      display: block;
+      padding: 8px 12px;
+      border-radius: 10px;
+      color: var(--muted);
+      font-size: 0.95rem;
+      font-weight: 500;
+      text-decoration: none;
+      transition: color 0.15s ease, background-color 0.15s ease;
+    }
+    .nav-links a:hover { color: var(--text); background-color: rgba(139, 123, 232, 0.12); }
+
+    /* ---------- Hero ---------- */
+    .hero { padding: clamp(70px, 10vw, 110px) 0 clamp(50px, 7vw, 76px); text-align: center; }
+
+    .hero-kicker {
+      display: inline-block;
+      margin-bottom: 20px;
+      padding: 6px 14px;
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      background-color: rgba(139, 123, 232, 0.08);
+      color: var(--violet);
+      font-size: 0.8rem;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .hero h1 {
+      font-size: clamp(2.1rem, 6vw, 3.4rem);
+      font-weight: 800;
+      line-height: 1.08;
+      letter-spacing: -0.02em;
+      max-width: 660px;
+      margin: 0 auto 18px;
+    }
+
+    .hero-sub {
+      max-width: 540px;
+      margin: 0 auto 32px;
+      color: var(--muted);
+      font-size: clamp(1rem, 2vw, 1.12rem);
+    }
+
+    .btn {
+      display: inline-block;
+      padding: 13px 30px;
+      border-radius: 999px;
+      border: 1px solid transparent;
+      background: linear-gradient(95deg, var(--violet), var(--blue));
+      color: #ffffff;
+      font-size: 1rem;
+      font-weight: 600;
+      text-decoration: none;
+      cursor: pointer;
+      box-shadow: 0 10px 28px rgba(79, 124, 255, 0.28);
+      transition: transform 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
+    }
+    .btn:hover { transform: translateY(-2px); box-shadow: 0 14px 36px rgba(79, 124, 255, 0.4); }
+    .btn:active { transform: translateY(0); }
+
+    .hero-btn-row { display: flex; flex-direction: column; align-items: center; gap: 14px; }
+    .hero-note { color: var(--muted); font-size: 0.85rem; }
+
+    /* ---------- Sections ---------- */
+    .section { padding: clamp(56px, 8vw, 84px) 0; }
+    .section h2 {
+      text-align: center;
+      font-size: clamp(1.6rem, 3.5vw, 2.1rem);
+      font-weight: 700;
+      letter-spacing: -0.01em;
+      margin-bottom: 10px;
+    }
+    .section .lede {
+      max-width: 600px;
+      margin: 0 auto 46px;
+      text-align: center;
+      color: var(--muted);
+      font-size: 1rem;
+    }
+
+    .grid {
+      display: grid;
+      gap: 20px;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      align-items: stretch;
+    }
+    .grid-stack { grid-template-columns: 1fr; }
+
+    /* ---------- Features ---------- */
+    .feature {
+      background-color: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 30px 26px;
+      position: relative;
+      overflow: hidden;
+    }
+    .feature::before {
+      content: "";
+      position: absolute;
+      top: -90px;
+      left: -90px;
+      width: 180px;
+      height: 180px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(139, 123, 232, 0.18), transparent 65%);
+      pointer-events: none;
+    }
+    .feature .icon {
+      display: inline-grid;
+      place-items: center;
+      width: 46px;
+      height: 46px;
+      border-radius: 12px;
+      background-color: rgba(139, 123, 232, 0.12);
+      font-size: 1.4rem;
+      margin-bottom: 16px;
+      position: relative;
+    }
+    .feature h3 { font-size: 1.15rem; font-weight: 700; margin-bottom: 10px; }
+    .feature p { color: var(--muted); font-size: 0.97rem; max-width: 26rem; }
+
+    /* ---------- Pricing ---------- */
+    .plan {
+      background-color: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 28px 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
+    }
+    .plan:hover { transform: translateY(-3px); box-shadow: 0 14px 34px rgba(0, 0, 0, 0.35); }
+    .plan h3 { font-size: 1.05rem; font-weight: 600; color: var(--muted); }
+
+    .plan .price {
+      display: flex;
+      align-items: baseline;
+      gap: 8px;
+    }
+    .plan .price .amount { font-size: 2.1rem; font-weight: 800; letter-spacing: -0.02em; }
+    .plan .price .period { color: var(--muted); font-size: 0.95rem; }
+
+    .plan .plan-desc { color: var(--text); font-size: 0.95rem; min-height: 3em; }
+    .plan ul { list-style: none; }
+    .plan li {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      color: var(--muted);
+      font-size: 0.92rem;
+      padding-bottom: 9px;
+    }
+    .plan li::before {
+      content: "✔";
+      color: var(--success);
+      font-size: 0.8rem;
+      font-weight: 700;
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+
+    .plan .cta {
+      margin-top: auto;
+      padding: 11px 18px;
+      border-radius: 10px;
+      border: 1px solid var(--violet);
+      background-color: transparent;
+      color: var(--violet);
+      font: inherit;
+      font-weight: 600;
+      text-align: center;
+      cursor: pointer;
+      transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+    }
+    .plan .cta:hover { background-color: rgba(139, 123, 232, 0.14); color: var(--text); }
+
+    .plan.featured {
+      border-color: var(--violet);
+      background: linear-gradient(165deg, var(--surface-2), var(--surface));
+      box-shadow: 0 18px 44px rgba(139, 123, 232, 0.22);
+      position: relative;
+    }
+    .plan.featured h3 { color: var(--text); }
+    .plan.featured .price .amount {
+      background: linear-gradient(95deg, var(--violet), var(--blue));
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .plan.featured .cta {
+      background: linear-gradient(95deg, var(--violet), var(--blue));
+      border-color: transparent;
+      color: #ffffff;
+    }
+    .plan.featured .cta:hover { filter: brightness(1.08); color: #ffffff; }
+
+    .badge {
+      position: absolute;
+      top: -12px;
+      left: 50%;
+      transform: translateX(-50%);
+      padding: 5px 14px;
+      border-radius: 999px;
+      background: linear-gradient(95deg, var(--violet), var(--blue));
+      color: #ffffff;
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      white-space: nowrap;
+    }
+
+    /* ---------- Contact ---------- */
+    .contact-box {
+      max-width: 560px;
+      margin: 0 auto;
+      background-color: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 32px 28px;
+    }
+    .contact-box h2 { margin-bottom: 6px; font-size: 1.5rem; text-align: left; }
+
+    .field { margin-top: 16px; }
+    .field label {
+      display: block;
+      font-size: 0.9rem;
+      font-weight: 500;
+      color: var(--muted);
+      margin-bottom: 7px;
+    }
+    .field label .req { color: var(--violet); }
+
+    .field input,
+    .field textarea {
+      width: 100%;
+      padding: 11px 13px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      background-color: var(--bg-deep);
+      color: var(--text);
+      font: inherit;
+      font-size: 0.95rem;
+      transition: border-color 0.15s ease, box-shadow 0.15s ease;
+    }
+    .field textarea { resize: vertical; min-height: 110px; }
+    .field input::placeholder,
+    .field textarea::placeholder { color: #6d6a8f; }
+    .field input:focus,
+    .field textarea:focus {
+      outline: none;
+      border-color: var(--violet);
+      box-shadow: 0 0 0 3px rgba(139, 123, 232, 0.22);
+    }
+    .field input.invalid,
+    .field textarea.invalid { border-color: var(--error); }
+    .field input.invalid:focus,
+    .field textarea.invalid:focus { box-shadow: 0 0 0 3px rgba(255, 122, 122, 0.22); }
+
+    .field-error {
+      display: none;
+      margin-top: 6px;
+      color: var(--error);
+      font-size: 0.84rem;
+    }
+    .field-error.show { display: block; }
+
+    .form-error {
+      display: none;
+      margin-top: 12px;
+      padding: 10px 14px;
+      border-radius: 10px;
+      border: 1px solid var(--error);
+      background-color: rgba(255, 122, 122, 0.08);
+      color: var(--error);
+      font-size: 0.88rem;
+    }
+    .form-error.show { display: block; }
+
+    .form-actions {
+      margin-top: 22px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 14px;
+      flex-wrap: wrap;
+    }
+    .form-actions .btn {
+      padding: 11px 26px;
+      font-size: 0.98rem;
+    }
+
+    .thank-you {
+      margin: 0 auto;
+      max-width: 560px;
+      text-align: center;
+      padding: 48px 28px;
+      background-color: var(--surface);
+      border: 1px solid rgba(67, 232, 155, 0.35);
+      border-radius: var(--radius);
+      font-size: 1.05rem;
+    }
+    .thank-you .moon { font-size: 2.4rem; display: block; margin-bottom: 14px; }
+    .thank-you strong { color: var(--success); }
+
+    /* ---------- Footer ---------- */
+    .site-footer {
+      border-top: 1px solid var(--border);
+      padding: 22px 20px;
+      text-align: center;
+      color: var(--muted);
+      font-size: 0.88rem;
+    }
+
+    /* ---------- Responsive ---------- */
+    @media (max-width: 900px) {
+      .grid { grid-template-columns: 1fr; }
+    }
+
+    @media (max-width: 760px) {
+      .wrap { padding-left: 16px; padding-right: 16px; }
+      .site-footer { padding: 18px 16px; }
+      .nav-links a { padding: 8px 9px; font-size: 0.9rem; }
+      .logo { font-size: 1.15rem; }
+      .hero { padding-top: clamp(56px, 9vw, 84px); }
+      .plan.featured { transform: none; box-shadow: 0 12px 28px rgba(139, 123, 232, 0.22); }
+      .contact-box { padding: 26px 20px; }
+      .form-actions { flex-direction: column-reverse; align-items: stretch; }
+      .form-actions .btn { width: 100%; text-align: center; }
+    }
+
+    @media (max-width: 430px) {
+      .nav {
+        flex-direction: column;
+        align-items: center;
+        gap: 2px;
+        min-height: 0;
+        padding-top: 10px;
+        padding-bottom: 10px;
+      }
+      .logo { text-align: center; }
+      .nav-links { gap: 2px; }
+      .nav-links a {
+        padding: 6px 10px;
+        font-size: 0.85rem;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ===== Header ===== -->
+  <header class="site-header">
+    <div class="wrap nav">
+      <a class="logo" href="#">
+        <span class="logo-word">🦋 Nachtfalter</span>
+        <span>Schlaf-Tracker · offline-first</span>
+      </a>
+      <nav aria-label="Hauptnavigation">
+        <ul class="nav-links">
+          <li><a href="#features">Features</a></li>
+          <li><a href="#pricing">Preise</a></li>
+          <li><a href="#contact">Kontakt</a></li>
+        </ul>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <!-- ===== Hero ===== -->
+    <section class="hero">
+      <div class="wrap">
+        <span class="hero-kicker">Jetzt kostenlos</span>
+        <h1>Besser schlafen – ohne Cloud.</h1>
+        <p class="hero-sub">Nachtfalter trackt deinen Schlaf komplett lokal auf deinem Gerät: keine Server, keine Datenabgabe, nur du und dein Schlaf.</p>
+        <div class="hero-btn-row">
+          <a class="btn" href="#pricing">Kostenlos testen</a>
+          <span class="hero-note">Sieben Tage alle Funktionen – ohne Kreditkarte, ohne Konto.</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== Features ===== -->
+    <section id="features" class="section" aria-labelledby="features-title">
+      <div class="wrap">
+        <h2 id="features-title">Was Nachtfalter kann</h2>
+        <p class="lede">Drei Dinge, die dein Schlaf wirklich verbessert – ohne dass deine Daten irgendwo anders landen.</p>
+
+        <div class="grid">
+          <article class="feature">
+            <div class="icon" aria-hidden="true">📵</div>
+            <h3>Offline-first</h3>
+            <p>Alle Daten liegen lokal auf deinem Gerät – ohne Cloud, ohne Server, ohne Kontonummer.</p>
+          </article>
+
+          <article class="feature">
+            <div class="icon" aria-hidden="true">🌙</div>
+            <h3>Sanfter Wecker</h3>
+            <p>Er weckt dich sanft auf, während er dein bevorzugtes Aufwachfenster lernt.</p>
+          </article>
+
+          <article class="feature">
+            <div class="icon" aria-hidden="true">📊</div>
+            <h3>Schlafphasen</h3>
+            <p>Schlafphasen werden direkt im Gerät erkannt und übersichtlich als Tagesübersicht dargestellt.</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== Pricing ===== -->
+    <section id="pricing" class="section" aria-labelledby="pricing-title">
+      <div class="wrap">
+        <h2 id="pricing-title">Einfache Preise</h2>
+        <p class="lede">Keine versteckten Kosten, kein Abo-Karussell – nur ein klarer Preis für gute Nächte.</p>
+
+        <div class="grid">
+          <article class="plan">
+            <h3>Basis</h3>
+            <div class="price"><span class="amount">0&nbsp;€</span></div>
+            <p class="plan-desc">Für alle, die einfach mal loslegen wollen.</p>
+            <ul>
+              <li>Schlafdauer und Regeneration</li>
+              <li>Offline-Tracking im Standard</li>
+              <li>Einfacher Tagesüberblick</li>
+            </ul>
+            <button type="button" class="cta">Basis wählen</button>
+          </article>
+
+          <article class="plan featured">
+            <span class="badge">Beliebt</span>
+            <h3>Plus</h3>
+            <div class="price"><span class="amount">3&nbsp;€/Monat</span></div>
+            <p class="plan-desc">Das komplette Nachtfalter-Erlebnis.</p>
+            <ul>
+              <li>Schlafphasen im Detail</li>
+              <li>Sanfter Wecker &amp; Alarme</li>
+              <li>Langzeit-Trends &amp; Ausdruck</li>
+            </ul>
+            <button type="button" class="cta">Plus wählen</button>
+          </article>
+
+          <article class="plan">
+            <h3>Familie</h3>
+            <div class="price"><span class="amount">6&nbsp;€/Monat</span></div>
+            <p class="plan-desc">Alle Plus-Features für bis zu sechs Familienmitglieder.</p>
+            <ul>
+              <li>Bis zu 6 Accounts</li>
+              <li>Vergleichsbilder der Familie</li>
+              <li>Einmaliger Familien-Setup-Code</li>
+            </ul>
+            <button type="button" class="cta">Familie wählen</button>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== Contact ===== -->
+    <section id="contact" class="section" aria-labelledby="contact-title">
+      <div class="wrap">
+        <h2 id="contact-title">Frag uns etwas</h2>
+        <p class="lede">Wir sind nur ein kleines Team – deine Nachricht landet direkt bei uns, nicht in einem Support-Ticket-System.</p>
+
+        <div class="contact-box">
+          <form id="contact-form" novalidate>
+            <div class="field">
+              <label for="name">Name <span class="req" aria-hidden="true">*</span></label>
+              <input type="text" id="name" name="name" autocomplete="name" placeholder="Wie solltest wir dich nennen?" />
+            </div>
+
+            <div class="field">
+              <label for="email">E-Mail <span class="req" aria-hidden="true">*</span></label>
+              <input type="email" id="email" name="email" autocomplete="email" placeholder="anna@beispiel.de" />
+              <p class="field-error" id="email-error" role="alert">Bitte gib eine gültige E-Mail-Adresse ein.</p>
+            </div>
+
+            <div class="field">
+              <label for="message">Nachricht <span class="req" aria-hidden="true">*</span></label>
+              <textarea id="message" name="message" placeholder="Deine Frage, deine Idee …"></textarea>
+            </div>
+
+            <div class="form-actions">
+              <p class="form-error" id="form-error" role="alert"></p>
+              <button type="submit" class="btn">Nachricht senden</button>
+            </div>
+          </form>
+
+          <div class="thank-you" id="thank-you" hidden>
+            <span class="moon" aria-hidden="true">🌙</span>
+            <p><strong>Danke für deine Nachricht!</strong> Sie ist sicher bei uns gelandet – wir melden uns zeitnah, ganz ohne Server-Hektik.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- ===== Footer ===== -->
+  <footer class="site-footer">
+    <div class="wrap">© 2026 Nachtfalter</div>
+  </footer>
+
+  <script>
+    (function () {
+      'use strict';
+
+      const form = document.getElementById('contact-form');
+      const nameInput = document.getElementById('name');
+      const emailInput = document.getElementById('email');
+      const messageInput = document.getElementById('message');
+      const emailError = document.getElementById('email-error');
+      const formError = document.getElementById('form-error');
+      const thankYou = document.getElementById('thank-you');
+
+      const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+      function setFieldInvalid(field, invalid) {
+        field.classList.toggle('invalid', invalid);
+      }
+
+      form.addEventListener('submit', function (e) {
+        e.preventDefault(); // kein Seitenreload
+
+        const name = nameInput.value.trim();
+        const email = emailInput.value.trim();
+        const message = messageInput.value.trim();
+
+        setFieldInvalid(nameInput, false);
+        setFieldInvalid(emailInput, false);
+        setFieldInvalid(messageInput, false);
+        emailError.classList.remove('show');
+        formError.textContent = '';
+        formError.classList.remove('show');
+
+        let hasError = false;
+
+        if (!name || !message) {
+          if (!name) setFieldInvalid(nameInput, true);
+          if (!message) setFieldInvalid(messageInput, true);
+          formError.textContent = 'Bitte fülle alle Felder aus.';
+          formError.classList.add('show');
+          hasError = true;
+          if (!name) nameInput.focus();
+        }
+
+        if (!hasError && !emailPattern.test(email)) {
+          setFieldInvalid(emailInput, true);
+          emailError.classList.add('show');
+          formError.textContent = '';
+          formError.classList.remove('show');
+          hasError = true;
+          emailInput.focus();
+        }
+
+        if (hasError) return;
+
+        form.hidden = true;
+        thankYou.hidden = false;
+      });
+    })();
+  </script>
+</body>
+</html>

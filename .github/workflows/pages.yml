@@ -1,8 +1,8 @@
 # Veröffentlicht diese Seite auf GitHub Pages.
 # Voraussetzung: öffentliches Repo und Settings → Pages → Source „GitHub Actions“.
-# Die Daten erzeugt LlamaDock (privates Repo) lokal:
-#   node scripts/export-site.mjs
-# (nur freigegebene Läufe, mit Datenschutz-Prüfung) und schreibt sie hierher.
+# Den Inhalt schreibt LlamaDock (privates Repo): Nach jedem Benchmark-Lauf, jeder Bewertung
+# und jeder Szenario-Änderung exportiert es die Seite hierher, committet und pusht
+# (server/site-sync.mjs; von Hand: node scripts/export-site.mjs).
 name: Benchmark-Website
 
 on:
@@ -21,18 +21,20 @@ concurrency:
 
 jobs:
   deploy:
-    runs-on: ubuntu-latest
+    # Feste Image-Version statt ubuntu-latest (das ab 19.10.2026 auf Ubuntu 26 wechselt)
+    runs-on: ubuntu-24.04
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
-      - uses: actions/checkout@v4
+      # Nur Action-Versionen, die auf Node 24 laufen (Node 20 ist auf den Runnern abgekündigt)
+      - uses: actions/checkout@v7
       - name: Daten vorhanden?
         run: |
-          test -f data/index.json || { echo "data/index.json fehlt - erst 'node scripts/export-site.mjs' in LlamaDock ausfuehren"; exit 1; }
-      - uses: actions/configure-pages@v5
-      - uses: actions/upload-pages-artifact@v3
+          test -f data/index.json || { echo "data/index.json fehlt - erst in LlamaDock exportieren"; exit 1; }
+      - uses: actions/configure-pages@v6
+      - uses: actions/upload-pages-artifact@v5
         with:
           path: .
       - id: deployment
-        uses: actions/deploy-pages@v4
+        uses: actions/deploy-pages@v5

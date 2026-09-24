@@ -1,0 +1,222 @@
+{
+  "id": "20260919130100-website-02",
+  "date": "2026-09-19T13:01:00.611Z",
+  "state": "done",
+  "batch": "20260919130100-website-02",
+  "configId": "4700cd4848",
+  "runKey": "website/4700cd4848",
+  "model": "Qwen3.8-27B-Uncensored-Q4_K_M",
+  "modelSlug": "qwen3-8-27b-uncensored-q4-k-m",
+  "scenario": {
+    "id": "website",
+    "name": "Landingpage nach Spezifikation",
+    "version": 1,
+    "description": null,
+    "entry": "index.html",
+    "categories": null,
+    "rubric": null
+  },
+  "prompt": "Baue im aktuellen Verzeichnis eine Landingpage für die fiktive App **„Nachtfalter“**, einen Schlaf-Tracker, der ohne Cloud auskommt.\n\nAnforderungen:\n\n1. Eine Datei `index.html` (CSS und JavaScript dürfen inline oder in `style.css` / `script.js` liegen). Keine Frameworks, keine CDNs, kein Build-Schritt. Die Seite muss direkt im Browser funktionieren.\n2. Dunkles Design (Nachtblau/Violett), gut lesbar, moderne Optik.\n3. Abschnitte in dieser Reihenfolge:\n   - Kopfzeile mit Logo-Schriftzug „Nachtfalter“ und Navigation mit Links auf `#features`, `#pricing` und `#contact`.\n   - Hero mit `<h1>`, einem Satz Untertitel und einem Button „Kostenlos testen“.\n   - `<section id=\"features\">` mit genau drei Features (je Überschrift + ein Satz): „Offline-first“, „Sanfter Wecker“, „Schlafphasen“.\n   - `<section id=\"pricing\">` mit drei Plänen als Karten mit Klasse `plan`: „Basis“ (0 €), „Plus“ (3 €/Monat), „Familie“ (6 €/Monat). Der Plan „Plus“ ist hervorgehoben.\n   - `<section id=\"contact\">` mit einem Formular: Name, E-Mail (`type=\"email\"`), Nachricht, Absenden-Button. Beim Absenden wird **nicht** neu geladen: Ungültige E-Mail → Fehlermeldung direkt am Feld, gültige Eingaben → Dankesmeldung statt des Formulars.\n   - Fußzeile mit „© 2026 Nachtfalter“.\n4. Responsiv: Auf 375 px Breite darf nichts horizontal überlaufen, die Pläne stehen dann untereinander.\n5. Keine Konsolenfehler.\n\nWenn du fertig bist, antworte mit einer kurzen Liste der erstellten Dateien.\n",
+  "thinking": "medium",
+  "profile": {
+    "id": "qwen3.8-27b-q4km-262k",
+    "name": "Qwen3.8 27B Uncensored · Q4_K_M · 262k",
+    "provider": "llamacpp",
+    "model": "Qwen3.8-27B-Uncensored-Q4_K_M.gguf",
+    "mmproj": null,
+    "recipe": "qwen3.8-27b-uncensored",
+    "server": {
+      "ngl": 99,
+      "ctx": 262144,
+      "kvCache": "q4_0",
+      "flashAttention": true,
+      "parallel": 1,
+      "ub": 1024,
+      "jinja": true,
+      "build": null,
+      "cpuMoe": null,
+      "extraArgs": []
+    },
+    "ninfer": null,
+    "sampling": {
+      "temp": 1,
+      "top_p": 0.95,
+      "top_k": 20,
+      "min_p": 0,
+      "repeat_penalty": 1,
+      "presence_penalty": 0
+    },
+    "thinking": "medium",
+    "reasoningEfforts": null,
+    "maxTokens": 32768,
+    "router": null
+  },
+  "systemPrompt": null,
+  "tools": [
+    "read",
+    "bash",
+    "edit",
+    "write"
+  ],
+  "timeLimitSec": 900,
+  "hardware": {
+    "gpu": "NVIDIA GeForce RTX 4090",
+    "vramMB": 24564,
+    "driver": "610.88",
+    "cuda": "13.3",
+    "cpu": "AMD Ryzen 7 7800X3D 8-Core Processor",
+    "threads": 16,
+    "ramGB": 63,
+    "os": "Windows_NT 10.0.26200"
+  },
+  "provider": {
+    "id": "llamacpp",
+    "build": null,
+    "version": "0.3.0-dev (build 10622, commit 3737e4137)"
+  },
+  "harness": {
+    "id": "pi",
+    "version": "0.85.1"
+  },
+  "timing": {
+    "startedAt": 1789823457780,
+    "loadMs": 0,
+    "agentMs": 709403,
+    "checkMs": 3895,
+    "finishedAt": 1789824171080
+  },
+  "tokens": {
+    "in": 1777,
+    "out": 28048,
+    "cacheRead": 135040
+  },
+  "turns": 6,
+  "toolCalls": {
+    "total": 7,
+    "byName": {
+      "bash": 4,
+      "write": 3
+    }
+  },
+  "toolErrors": 1,
+  "isolation": {
+    "breaches": 0
+  },
+  "tps": {
+    "decode": 42.59,
+    "effective": 39.6,
+    "samples": 235
+  },
+  "errors": [],
+  "final": "Fertig – alle Checks bestanden (JS-Syntax, ID-Korrespondenz, Formularlogik).\n\n**Erstellte Dateien:**\n- `index.html` – Struktur: Kopfzeile (Logo + Navigation auf `#features`/`#pricing`/`#contact`), Hero mit `<h1>`, Untertitel und „Kostenlos testen“-Button, Features (Offline-first, Sanfter Wecker, Schlafphasen), drei Preispläne als `.plan`-Karten (Plus hervorgehoben), Kontaktformular, Fußzeile „© 2026 Nachtfalter“\n- `style.css` – dunkles Nachtblau/Violett-Design mit Verläufen, Sticky-Header, Karten-Layout; unter 820 px stehen Pläne und Features untereinander, bei 375 px überläuft nichts horizontal (Grids mit `minmax(0,1fr)`, Container-Padding, schmales Header-Layout)\n- `script.js` – Formularvalidierung ohne Reload: ungültige E-Mail → Fehler direkt am Feld (verschwindet beim Tippen), gültige Eingaben → Formular wird durch personalisierte Dankesmeldung ersetzt; alle DOM-Elemente existieren, keine Konsolenfehler\n\nDirekt im Browser öffnen mit `index.html` – kein Build-Schritt, keine externen Abhängigkeiten.",
+  "artifacts": [
+    {
+      "path": "index.html",
+      "size": 6809
+    },
+    {
+      "path": "script.js",
+      "size": 2252
+    },
+    {
+      "path": "style.css",
+      "size": 8641
+    }
+  ],
+  "checks": [
+    {
+      "id": "entry",
+      "label": "index.html existiert",
+      "type": "file-exists",
+      "ok": true,
+      "detail": "index.html"
+    },
+    {
+      "id": "load",
+      "label": "Lädt ohne Konsolenfehler",
+      "type": "loads-without-errors",
+      "ok": true,
+      "detail": null
+    },
+    {
+      "id": "hero",
+      "label": "Hero mit Überschrift (h1)",
+      "type": "selector",
+      "ok": true,
+      "detail": null
+    },
+    {
+      "id": "title",
+      "label": "Produktname „Nachtfalter“ steht auf der Seite",
+      "type": "text-contains",
+      "ok": true,
+      "detail": null
+    },
+    {
+      "id": "features",
+      "label": "Mindestens 3 Features in #features",
+      "type": "selector-count",
+      "ok": true,
+      "detail": "3 gefunden"
+    },
+    {
+      "id": "pricing",
+      "label": "3 Preispläne in #pricing",
+      "type": "selector-count",
+      "ok": true,
+      "detail": "3 gefunden"
+    },
+    {
+      "id": "form",
+      "label": "Formular mit E-Mail-Feld",
+      "type": "selector",
+      "ok": true,
+      "detail": null
+    },
+    {
+      "id": "form-validate",
+      "label": "Formular: Fehler bei ungültiger E-Mail, Dank bei gültiger, ohne Neuladen",
+      "type": "script",
+      "ok": true,
+      "detail": null
+    },
+    {
+      "id": "mobile",
+      "label": "Kein horizontales Scrollen bei 375 px",
+      "type": "no-horizontal-scroll",
+      "ok": true,
+      "detail": "scrollWidth 375 / Breite 375"
+    },
+    {
+      "id": "nav",
+      "label": "Navigation verlinkt auf #features, #pricing, #contact",
+      "type": "script",
+      "ok": true,
+      "detail": null
+    }
+  ],
+  "console": [
+    {
+      "level": "error",
+      "text": "Failed to load resource: the server responded with a status of 404 (Not Found) http://localhost/favicon.ico",
+      "source": "network"
+    }
+  ],
+  "score": {
+    "checksPassed": 10,
+    "checksTotal": 10,
+    "auto": 100,
+    "manual": null
+  },
+  "points": {
+    "checks": 100,
+    "manual": null,
+    "tps": 50.2,
+    "time": 41.8,
+    "speed": 46,
+    "score": 76
+  },
+  "manual": null,
+  "screenshot": true,
+  "mobileScreenshot": true
+}

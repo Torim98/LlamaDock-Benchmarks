@@ -1,0 +1,207 @@
+{
+  "id": "20260919093254-game-01",
+  "date": "2026-09-19T09:32:54.062Z",
+  "state": "done",
+  "batch": "20260919093254-game-01",
+  "configId": "e7b69f6c51",
+  "runKey": "game/e7b69f6c51",
+  "model": "Ternary-Bonsai-2-27B-PTQ1_0",
+  "modelSlug": "ternary-bonsai-2-27b-ptq1-0",
+  "scenario": {
+    "id": "game",
+    "name": "Snake in einer HTML-Datei",
+    "version": 1,
+    "description": null,
+    "entry": "index.html",
+    "categories": null,
+    "rubric": null
+  },
+  "prompt": "Programmiere im aktuellen Verzeichnis das Spiel **Snake** als **eine einzige Datei `index.html`** (HTML, CSS und JavaScript inline, keine externen Bibliotheken, kein Build-Schritt).\n\nAnforderungen:\n\n1. Spielfeld als `<canvas>`, Raster 20 × 20 Felder, gut sichtbar zentriert.\n2. Steuerung mit den Pfeiltasten. Eine direkte 180°-Wende (z. B. von rechts nach links) ist nicht erlaubt.\n3. Start mit Leertaste oder Enter; vorher steht ein kurzer Hinweis auf dem Spielfeld. `P` pausiert und setzt fort.\n4. Futter erscheint zufällig auf einem freien Feld. Frisst die Schlange es, wächst sie um ein Glied und der Punktestand steigt um 1.\n5. Der Punktestand steht sichtbar über dem Spielfeld als „Punkte: N“. Der Highscore wird in `localStorage` gespeichert und angezeigt.\n6. Berührt die Schlange die Wand oder sich selbst, ist das Spiel vorbei: „Game Over“ erscheint, Leertaste/Enter startet neu.\n7. Das Tempo steigt leicht mit jedem gefressenen Futter.\n8. Keine Konsolenfehler.\n\nWenn du fertig bist, antworte mit einem Satz, was du gebaut hast.\n",
+  "thinking": "medium",
+  "profile": {
+    "id": "bonsai-2-27b-ptq1-262k",
+    "name": "Bonsai 2 27B · PTQ1_0 · 262k",
+    "provider": "llamacpp",
+    "model": "Ternary-Bonsai-2-27B-PTQ1_0.gguf",
+    "mmproj": "Ternary-Bonsai-2-27B-mmproj-Q8_0.gguf",
+    "recipe": "bonsai-2-27b",
+    "server": {
+      "ngl": 99,
+      "ctx": 262144,
+      "kvCache": "q8_0",
+      "flashAttention": true,
+      "parallel": 1,
+      "ub": 1024,
+      "jinja": true,
+      "build": "prism",
+      "cpuMoe": null,
+      "extraArgs": []
+    },
+    "ninfer": null,
+    "sampling": {
+      "temp": 1,
+      "top_p": 0.95,
+      "top_k": 20,
+      "min_p": 0,
+      "repeat_penalty": 1,
+      "presence_penalty": 0
+    },
+    "thinking": "medium",
+    "reasoningEfforts": null,
+    "maxTokens": 32768,
+    "router": null
+  },
+  "systemPrompt": null,
+  "tools": [
+    "read",
+    "bash",
+    "edit",
+    "write"
+  ],
+  "timeLimitSec": 900,
+  "hardware": {
+    "gpu": "NVIDIA GeForce RTX 4090",
+    "vramMB": 24564,
+    "driver": "610.88",
+    "cuda": "13.3",
+    "cpu": "AMD Ryzen 7 7800X3D 8-Core Processor",
+    "threads": 16,
+    "ramGB": 63,
+    "os": "Windows_NT 10.0.26200"
+  },
+  "provider": {
+    "id": "llamacpp",
+    "build": "prism",
+    "version": "0.2.0-dev (build 10685, commit 7dffb158d)"
+  },
+  "harness": {
+    "id": "pi",
+    "version": "0.85.1"
+  },
+  "timing": {
+    "startedAt": 1789810374574,
+    "loadMs": 3635,
+    "agentMs": 161606,
+    "checkMs": 15237,
+    "finishedAt": 1789810555055
+  },
+  "tokens": {
+    "in": 13896,
+    "out": 12595,
+    "cacheRead": 18642
+  },
+  "turns": 4,
+  "toolCalls": {
+    "total": 3,
+    "byName": {
+      "bash": 2,
+      "write": 1
+    }
+  },
+  "toolErrors": 0,
+  "isolation": {
+    "breaches": 0
+  },
+  "tps": {
+    "decode": 84.77,
+    "effective": 78.2,
+    "samples": 51
+  },
+  "errors": [],
+  "final": "Ich habe das Snake-Spiel als einzelne `index.html`-Datei gebaut, die ein 20×20-Canvas-Spielfeld, Pfeiltastensteuerung ohne 180°-Wende, Start/Neustart per Leertaste/Enter mit Start- und Game-Over-Hinweis auf dem Feld, P-Pausen-Funktion, Punktzähler (\"Punkte: N\") über dem Feld, einen localStorage-Highscore sowie zufachliches Futter (mit Wachstum und punktem Tempo) implementiert.",
+  "artifacts": [
+    {
+      "path": "index.html",
+      "size": 8097
+    }
+  ],
+  "checks": [
+    {
+      "id": "entry",
+      "label": "index.html existiert",
+      "type": "file-exists",
+      "ok": true,
+      "detail": "index.html"
+    },
+    {
+      "id": "single",
+      "label": "Kein externes Skript (alles in einer Datei)",
+      "type": "script",
+      "ok": true,
+      "detail": null
+    },
+    {
+      "id": "load",
+      "label": "Lädt ohne Konsolenfehler",
+      "type": "loads-without-errors",
+      "ok": true,
+      "detail": null
+    },
+    {
+      "id": "canvas",
+      "label": "Spielfeld ist ein <canvas>",
+      "type": "selector",
+      "ok": true,
+      "detail": null
+    },
+    {
+      "id": "score",
+      "label": "Punktestand wird angezeigt",
+      "type": "script",
+      "ok": true,
+      "detail": null
+    },
+    {
+      "id": "start",
+      "label": "Startet per Taste und bewegt sich",
+      "type": "keys-change-canvas",
+      "ok": true,
+      "detail": "Spielfeld hat sich verändert"
+    },
+    {
+      "id": "steer",
+      "label": "Pfeiltasten verändern das Spielfeld",
+      "type": "keys-change-canvas",
+      "ok": true,
+      "detail": "Spielfeld hat sich verändert"
+    },
+    {
+      "id": "pause",
+      "label": "P pausiert (Spielfeld bleibt stehen)",
+      "type": "script",
+      "ok": true,
+      "detail": null
+    },
+    {
+      "id": "gameover",
+      "label": "Game Over, wenn die Schlange die Wand trifft (Text oder Spielfeld steht still)",
+      "type": "script",
+      "ok": true,
+      "detail": null
+    }
+  ],
+  "console": [
+    {
+      "level": "error",
+      "text": "Failed to load resource: the server responded with a status of 404 (Not Found) http://localhost/favicon.ico",
+      "source": "network"
+    }
+  ],
+  "score": {
+    "checksPassed": 9,
+    "checksTotal": 9,
+    "auto": 100,
+    "manual": null
+  },
+  "points": {
+    "checks": 100,
+    "manual": null,
+    "tps": 100,
+    "time": 100,
+    "speed": 100,
+    "score": 100
+  },
+  "manual": null,
+  "screenshot": true,
+  "mobileScreenshot": false
+}

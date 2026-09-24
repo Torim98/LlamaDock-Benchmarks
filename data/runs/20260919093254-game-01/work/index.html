@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Snake</title>
+  <style>
+    * { box-sizing: border-box; }
+    html, body { height: 100%; margin: 0; }
+    body {
+      background: #10131a;
+      color: #f2f3f5;
+      font-family: system-ui, "Segoe UI", sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      overflow: hidden;
+      user-select: none;
+    }
+    .info { font-size: 1.05rem; letter-spacing: 0.02em; }
+    .info span { font-weight: 700; }
+    canvas {
+      background: #0f141d;
+      border-radius: 10px;
+      box-shadow: 0 0 0 1px #262d3a, 0 18px 60px rgba(0,0,0,0.5);
+      display: block;
+    }
+  </style>
+</head>
+<body>
+  <div class="info">
+    Punkte: <span id="score">0</span>&nbsp;&nbsp;&nbsp;&nbsp;Highscore: <span id="highscore">0</span>
+  </div>
+  <canvas id="game"></canvas>
+
+  <script>
+    "use strict";
+    (function () {
+      var GRID = 20;
+      var BASE_MS = 150;  // Starttempo (ms pro Tick)
+      var MIN_MS = 65;    // Minimaltempo
+      var DROP = 5;       // Tempo-Zuwachs je Futter (ms schneller)
+
+      var canvas = document.getElementById("game");
+      var ctx = canvas.getContext("2d");
+      var scoreEl = document.getElementById("score");
+      var highEl = document.getElementById("highscore");
+
+      var cell = 48;
+      var score = 0;
+      var highscore = 0;
+      try { highscore = parseInt(localStorage.getItem("snake-highscore"), 10) || 0; } catch (e) { /* ignore */ }
+      var snake, dir, nextDir, food, stepMs;
+      var state = "ready"; // ready | running | paused | over
+
+      var K = {
+        ArrowUp: { x: 0, y: -1 },
+        ArrowDown: { x: 0, y: 1 },
+        ArrowLeft: { x: -1, y: 0 },
+        ArrowRight: { x: 1, y: 0 }
+      };
+
+      function fitCanvas() {
+        var avail = Math.min(window.innerWidth * 0.94, window.innerHeight - 90, 920);
+        cell = Math.max(12, Math.floor(avail / GRID));
+        var size = cell * GRID;
+        var dpr = window.devicePixelRatio || 1;
+        canvas.width = size * dpr;
+        canvas.height = size * dpr;
+        canvas.style.width = size + "px";
+        canvas.style.height = size + "px";
+        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      }
+
+      function renderScore() {
+        scoreEl.textContent = score;
+        highEl.textContent = highscore;
+      }
+
+      function spawnFood() {
+        var occupied = {};
+        for (var i = 0; i < snake.length; i++) {
+          occupied[snake[i].x + "," + snake[i].y] = true;
+        }
+        var empty = [];
+        for (var y = 0; y < GRID; y++) {
+          for (var x = 0; x < GRID; x++) {
+            if (!occupied[x + "," + y]) empty.push({ x: x, y: y });
+          }
+        }
+        food = empty.length > 0
+          ? empty[Math.floor(Math.random() * empty.length)]
+          : null;
+      }
+
+      function initGame() {
+        score = 0;
+        stepMs = BASE_MS;
+        snake = [{ x: 9, y: 10 }, { x: 8, y: 10 }, { x: 7, y: 10 }];
+        dir = { x: 1, y: 0 };
+        nextDir = { x: 1, y: 0 };
+        spawnFood();
+        renderScore();
+      }
+
+      function step() {
+        dir = nextDir;
+        var head = { x: snake[0].x + dir.x, y: snake[0].y + dir.y };
+        var eats = food !== null && head.x === food.x && head.y === food.y;
+
+        // Bei Wachsen wandert der Schwanz nicht mit -> Schwanz-Feld darf
+        // beim Selbst-Kollisionstest ignoriert werden.
+        var body = eats ? snake : snake.slice(0, -1);
+
+        if (head.x < 0 || head.x >= GRID || head.y < 0 || head.y >= GRID ||
+            body.some(function (s) { return s.x === head.x && s.y === head.y; })) {
+          gameOver();
+          return;
+        }
+
+        snake.unshift(head);
+        if (eats) {
+          score += 1;
+          if (score > highscore) {
+            highscore = score;
+            try { localStorage.setItem("snake-highscore", String(highscore)); } catch (e) { /* ignore */ }
+          }
+          stepMs = Math.max(MIN_MS, BASE_MS - score * DROP);
+          renderScore();
+          spawnFood();
+        } else {
+          snake.pop();
+        }
+      }
+
+      function gameOver() {
+        state = "over";
+      }
+
+      function startGame() {
+        initGame();
+        state = "running";
+      }
+
+      window.addEventListener("keydown", function (e) {
+        var k = e.key;
+        if (k === " " || k === "Enter" || k === "ArrowUp" || k === "ArrowDown" ||
+            k === "ArrowLeft" || k === "ArrowRight") {
+          e.preventDefault();
+        }
+        if (k === " " || k === "Enter") {
+          if (state === "ready" || state === "over") startGame();
+        } else if (k === "p" || k === "P") {
+          if (state === "running") state = "paused";
+          else if (state === "paused") state = "running";
+        } else if (K[k] && state === "running") {
+          // Nur erlauben, wenn keine direkte 180-Grad-Wende wäre.
+          var d = K[k];
+          if (d.x + dir.x !== 0 || d.y + dir.y !== 0) nextDir = d;
+        }
+      });
+
+      /* ---- Zeichnen ---- */
+      function rrect(x, y, w, h, r) {
+        if (r > w / 2) r = w / 2;
+        if (r > h / 2) r = h / 2;
+        ctx.beginPath();
+        ctx.moveTo(x + r, y);
+        ctx.lineTo(x + w - r, y);
+        ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+        ctx.lineTo(x + w, y + h - r);
+        ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+        ctx.lineTo(x + r, y + h);
+        ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+        ctx.lineTo(x, y + r);
+        ctx.quadraticCurveTo(x, y, x + r, y);
+        ctx.closePath();
+      }
+
+      function drawCell(x, y, r, fill) {
+        var g = cell * 0.05;
+        ctx.fillStyle = fill;
+        rrect(x * cell + g, y * cell + g, cell - 2 * g, cell - 2 * g, cell * r);
+        ctx.fill();
+      }
+
+      function draw() {
+        var W = cell * GRID;
+        var H = W;
+
+        ctx.clearRect(0, 0, W, H);
+
+        if (food) drawCell(food.x, food.y, 0.22, "#ff5d5d");
+
+        // Von hinten nach vorne zeichnen, damit der Kopf oben liegt.
+        for (var i = snake.length - 1; i >= 0; i--) {
+          drawCell(snake[i].x, snake[i].y, 0.18, i === 0 ? "#93f5bd" : "#37cc7e");
+        }
+
+        if (state !== "running") {
+          ctx.fillStyle = "rgba(10,12,16,0.62)";
+          ctx.fillRect(0, 0, W, H);
+
+          ctx.textAlign = "center";
+          ctx.textBaseline = "middle";
+
+          var titles = { ready: "Snake", paused: "Pausiert", over: "Game Over" };
+          var subs = {
+            ready: "Leertaste oder Enter drücken zum Starten\nSteuerung: Pfeiltasten   Pause: P",
+            paused: "P drücken zum Fortsetzen",
+            over: "Punkte: " + score + "\nLeertaste oder Enter zum Neustart"
+          };
+
+          ctx.fillStyle = "#ffffff";
+          ctx.font = "bold " + Math.round(cell * 1.6) + "px system-ui, sans-serif";
+          ctx.fillText(titles[state], W / 2, H / 2 - Math.round(cell * 0.8));
+
+          ctx.fillStyle = "#c5ccda";
+          ctx.font = Math.round(cell * 0.55) + "px system-ui, sans-serif";
+          var lines = subs[state].split("\n");
+          var ly = H / 2 + Math.round(cell * 0.8);
+          for (var j = 0; j < lines.length; j++) {
+            ctx.fillText(lines[j], W / 2, ly);
+            ly += Math.round(cell * 0.85);
+          }
+        }
+      }
+
+      /* ---- Spiel-Schlaufe ---- */
+      var since = 0;
+      var lastT = null;
+
+      function loop(t) {
+        if (lastT !== null) {
+          since = state === "running" ? since + Math.min(t - lastT, 100) : 0;
+          while (state === "running" && since >= stepMs) {
+            since -= stepMs;
+            step();
+            if (state !== "running") { since = 0; break; }
+          }
+        }
+        lastT = t;
+        draw();
+        requestAnimationFrame(loop);
+      }
+
+      fitCanvas();
+      window.addEventListener("resize", function () { fitCanvas(); draw(); });
+      initGame();
+      requestAnimationFrame(loop);
+    })();
+  </script>
+</body>
+</html>

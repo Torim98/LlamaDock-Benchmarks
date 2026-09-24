@@ -1,0 +1,215 @@
+{
+  "id": "20260919130100-website-01",
+  "date": "2026-09-19T13:01:00.545Z",
+  "state": "done",
+  "batch": "20260919130100-website-01",
+  "configId": "e7b69f6c51",
+  "runKey": "website/e7b69f6c51",
+  "model": "Ternary-Bonsai-2-27B-PTQ1_0",
+  "modelSlug": "ternary-bonsai-2-27b-ptq1-0",
+  "scenario": {
+    "id": "website",
+    "name": "Landingpage nach Spezifikation",
+    "version": 1,
+    "description": null,
+    "entry": "index.html",
+    "categories": null,
+    "rubric": null
+  },
+  "prompt": "Baue im aktuellen Verzeichnis eine Landingpage für die fiktive App **„Nachtfalter“**, einen Schlaf-Tracker, der ohne Cloud auskommt.\n\nAnforderungen:\n\n1. Eine Datei `index.html` (CSS und JavaScript dürfen inline oder in `style.css` / `script.js` liegen). Keine Frameworks, keine CDNs, kein Build-Schritt. Die Seite muss direkt im Browser funktionieren.\n2. Dunkles Design (Nachtblau/Violett), gut lesbar, moderne Optik.\n3. Abschnitte in dieser Reihenfolge:\n   - Kopfzeile mit Logo-Schriftzug „Nachtfalter“ und Navigation mit Links auf `#features`, `#pricing` und `#contact`.\n   - Hero mit `<h1>`, einem Satz Untertitel und einem Button „Kostenlos testen“.\n   - `<section id=\"features\">` mit genau drei Features (je Überschrift + ein Satz): „Offline-first“, „Sanfter Wecker“, „Schlafphasen“.\n   - `<section id=\"pricing\">` mit drei Plänen als Karten mit Klasse `plan`: „Basis“ (0 €), „Plus“ (3 €/Monat), „Familie“ (6 €/Monat). Der Plan „Plus“ ist hervorgehoben.\n   - `<section id=\"contact\">` mit einem Formular: Name, E-Mail (`type=\"email\"`), Nachricht, Absenden-Button. Beim Absenden wird **nicht** neu geladen: Ungültige E-Mail → Fehlermeldung direkt am Feld, gültige Eingaben → Dankesmeldung statt des Formulars.\n   - Fußzeile mit „© 2026 Nachtfalter“.\n4. Responsiv: Auf 375 px Breite darf nichts horizontal überlaufen, die Pläne stehen dann untereinander.\n5. Keine Konsolenfehler.\n\nWenn du fertig bist, antworte mit einer kurzen Liste der erstellten Dateien.\n",
+  "thinking": "medium",
+  "profile": {
+    "id": "bonsai-2-27b-ptq1-262k",
+    "name": "Bonsai 2 27B · PTQ1_0 · 262k",
+    "provider": "llamacpp",
+    "model": "Ternary-Bonsai-2-27B-PTQ1_0.gguf",
+    "mmproj": "Ternary-Bonsai-2-27B-mmproj-Q8_0.gguf",
+    "recipe": "bonsai-2-27b",
+    "server": {
+      "ngl": 99,
+      "ctx": 262144,
+      "kvCache": "q8_0",
+      "flashAttention": true,
+      "parallel": 1,
+      "ub": 1024,
+      "jinja": true,
+      "build": "prism",
+      "cpuMoe": null,
+      "extraArgs": []
+    },
+    "ninfer": null,
+    "sampling": {
+      "temp": 1,
+      "top_p": 0.95,
+      "top_k": 20,
+      "min_p": 0,
+      "repeat_penalty": 1,
+      "presence_penalty": 0
+    },
+    "thinking": "medium",
+    "reasoningEfforts": null,
+    "maxTokens": 32768,
+    "router": null
+  },
+  "systemPrompt": null,
+  "tools": [
+    "read",
+    "bash",
+    "edit",
+    "write"
+  ],
+  "timeLimitSec": 900,
+  "hardware": {
+    "gpu": "NVIDIA GeForce RTX 4090",
+    "vramMB": 24564,
+    "driver": "610.88",
+    "cuda": "13.3",
+    "cpu": "AMD Ryzen 7 7800X3D 8-Core Processor",
+    "threads": 16,
+    "ramGB": 63,
+    "os": "Windows_NT 10.0.26200"
+  },
+  "provider": {
+    "id": "llamacpp",
+    "build": "prism",
+    "version": "0.2.0-dev (build 10685, commit 7dffb158d)"
+  },
+  "harness": {
+    "id": "pi",
+    "version": "0.85.1"
+  },
+  "timing": {
+    "startedAt": 1789822861502,
+    "loadMs": 5799,
+    "agentMs": 296334,
+    "checkMs": 3973,
+    "finishedAt": 1789823167610
+  },
+  "tokens": {
+    "in": 17076,
+    "out": 22065,
+    "cacheRead": 325567
+  },
+  "turns": 19,
+  "toolCalls": {
+    "total": 18,
+    "byName": {
+      "bash": 10,
+      "write": 1,
+      "edit": 7
+    }
+  },
+  "toolErrors": 3,
+  "isolation": {
+    "breaches": 0
+  },
+  "tps": {
+    "decode": 79.93,
+    "effective": 75,
+    "samples": 100
+  },
+  "errors": [],
+  "final": "Fertig. Alle Anforderungen sind erfüllt:\n\n- **Dunkles Design** (Nachtblau/Violett), System-Fonts, Gradient-Background\n- **Kopfzeile**: Logo „Nachtfalter\" + Navigation `#features`, `#pricing`, `#contact`\n- **Hero**: `<h1>` „Besser schlafen – ohne Cloud.\", Untertitel-Satz, Button „Kostenlos testen\"\n- **Features**: genau 3 Features mit Überschrift + einem Satz (Offline-first, Sanfter Wecker, Schlafphasen)\n- **Pricing**: 3 Karten mit Klasse `plan` (Basis 0 €, Plus 3 €/Monat — hervorgehoben mit „Beliebt\"-Badge und Gradient, Familie 6 €/Monat)\n- **Kontakt**: Formular mit `type=\"email\"`, `novalidate` + eigener Validierung, Fehlermeldung direkt am E-Mail-Feld (rote Grenze + Text), bei gültigen Eingaben wird das Formular gegen die Dankesmeldung getauscht — ohne Reload\n- **Fußzeile**: „© 2026 Nachtfalter\"\n- **Responsiv**: Pläne & Features stapeln sich ab 760 px, Navigation umbricht ab 430 px (keine Überlaufen bei 375 px), `scroll-padding-top` für sauberes Ankern\n- **Keine Konsolenfehler**: kein externes Material, alle Referenzen existieren, JS-Syntax geprüft\n\nErstellte Dateien:\n1. `index.html` (HTML + inline CSS + inline JavaScript — keine weiteren Dateien nötig)",
+  "artifacts": [
+    {
+      "path": "index.html",
+      "size": 21267
+    }
+  ],
+  "checks": [
+    {
+      "id": "entry",
+      "label": "index.html existiert",
+      "type": "file-exists",
+      "ok": true,
+      "detail": "index.html"
+    },
+    {
+      "id": "load",
+      "label": "Lädt ohne Konsolenfehler",
+      "type": "loads-without-errors",
+      "ok": true,
+      "detail": null
+    },
+    {
+      "id": "hero",
+      "label": "Hero mit Überschrift (h1)",
+      "type": "selector",
+      "ok": true,
+      "detail": null
+    },
+    {
+      "id": "title",
+      "label": "Produktname „Nachtfalter“ steht auf der Seite",
+      "type": "text-contains",
+      "ok": true,
+      "detail": null
+    },
+    {
+      "id": "features",
+      "label": "Mindestens 3 Features in #features",
+      "type": "selector-count",
+      "ok": true,
+      "detail": "3 gefunden"
+    },
+    {
+      "id": "pricing",
+      "label": "3 Preispläne in #pricing",
+      "type": "selector-count",
+      "ok": true,
+      "detail": "3 gefunden"
+    },
+    {
+      "id": "form",
+      "label": "Formular mit E-Mail-Feld",
+      "type": "selector",
+      "ok": true,
+      "detail": null
+    },
+    {
+      "id": "form-validate",
+      "label": "Formular: Fehler bei ungültiger E-Mail, Dank bei gültiger, ohne Neuladen",
+      "type": "script",
+      "ok": true,
+      "detail": null
+    },
+    {
+      "id": "mobile",
+      "label": "Kein horizontales Scrollen bei 375 px",
+      "type": "no-horizontal-scroll",
+      "ok": true,
+      "detail": "scrollWidth 375 / Breite 375"
+    },
+    {
+      "id": "nav",
+      "label": "Navigation verlinkt auf #features, #pricing, #contact",
+      "type": "script",
+      "ok": true,
+      "detail": null
+    }
+  ],
+  "console": [
+    {
+      "level": "error",
+      "text": "Failed to load resource: the server responded with a status of 404 (Not Found) http://localhost/favicon.ico",
+      "source": "network"
+    }
+  ],
+  "score": {
+    "checksPassed": 10,
+    "checksTotal": 10,
+    "auto": 100,
+    "manual": null
+  },
+  "points": {
+    "checks": 100,
+    "manual": null,
+    "tps": 94.3,
+    "time": 100,
+    "speed": 97.1,
+    "score": 98.7
+  },
+  "manual": null,
+  "screenshot": true,
+  "mobileScreenshot": true
+}

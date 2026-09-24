@@ -1,0 +1,207 @@
+{
+  "id": "20260919130100-game-01",
+  "date": "2026-09-19T13:01:00.610Z",
+  "state": "done",
+  "batch": "20260919130100-game-01",
+  "configId": "4700cd4848",
+  "runKey": "game/4700cd4848",
+  "model": "Qwen3.8-27B-Uncensored-Q4_K_M",
+  "modelSlug": "qwen3-8-27b-uncensored-q4-k-m",
+  "scenario": {
+    "id": "game",
+    "name": "Snake in einer HTML-Datei",
+    "version": 1,
+    "description": null,
+    "entry": "index.html",
+    "categories": null,
+    "rubric": null
+  },
+  "prompt": "Programmiere im aktuellen Verzeichnis das Spiel **Snake** als **eine einzige Datei `index.html`** (HTML, CSS und JavaScript inline, keine externen Bibliotheken, kein Build-Schritt).\n\nAnforderungen:\n\n1. Spielfeld als `<canvas>`, Raster 20 × 20 Felder, gut sichtbar zentriert.\n2. Steuerung mit den Pfeiltasten. Eine direkte 180°-Wende (z. B. von rechts nach links) ist nicht erlaubt.\n3. Start mit Leertaste oder Enter; vorher steht ein kurzer Hinweis auf dem Spielfeld. `P` pausiert und setzt fort.\n4. Futter erscheint zufällig auf einem freien Feld. Frisst die Schlange es, wächst sie um ein Glied und der Punktestand steigt um 1.\n5. Der Punktestand steht sichtbar über dem Spielfeld als „Punkte: N“. Der Highscore wird in `localStorage` gespeichert und angezeigt.\n6. Berührt die Schlange die Wand oder sich selbst, ist das Spiel vorbei: „Game Over“ erscheint, Leertaste/Enter startet neu.\n7. Das Tempo steigt leicht mit jedem gefressenen Futter.\n8. Keine Konsolenfehler.\n\nWenn du fertig bist, antworte mit einem Satz, was du gebaut hast.\n",
+  "thinking": "medium",
+  "profile": {
+    "id": "qwen3.8-27b-q4km-262k",
+    "name": "Qwen3.8 27B Uncensored · Q4_K_M · 262k",
+    "provider": "llamacpp",
+    "model": "Qwen3.8-27B-Uncensored-Q4_K_M.gguf",
+    "mmproj": null,
+    "recipe": "qwen3.8-27b-uncensored",
+    "server": {
+      "ngl": 99,
+      "ctx": 262144,
+      "kvCache": "q4_0",
+      "flashAttention": true,
+      "parallel": 1,
+      "ub": 1024,
+      "jinja": true,
+      "build": null,
+      "cpuMoe": null,
+      "extraArgs": []
+    },
+    "ninfer": null,
+    "sampling": {
+      "temp": 1,
+      "top_p": 0.95,
+      "top_k": 20,
+      "min_p": 0,
+      "repeat_penalty": 1,
+      "presence_penalty": 0
+    },
+    "thinking": "medium",
+    "reasoningEfforts": null,
+    "maxTokens": 32768,
+    "router": null
+  },
+  "systemPrompt": null,
+  "tools": [
+    "read",
+    "bash",
+    "edit",
+    "write"
+  ],
+  "timeLimitSec": 900,
+  "hardware": {
+    "gpu": "NVIDIA GeForce RTX 4090",
+    "vramMB": 24564,
+    "driver": "610.88",
+    "cuda": "13.3",
+    "cpu": "AMD Ryzen 7 7800X3D 8-Core Processor",
+    "threads": 16,
+    "ramGB": 63,
+    "os": "Windows_NT 10.0.26200"
+  },
+  "provider": {
+    "id": "llamacpp",
+    "build": null,
+    "version": "0.3.0-dev (build 10622, commit 3737e4137)"
+  },
+  "harness": {
+    "id": "pi",
+    "version": "0.85.1"
+  },
+  "timing": {
+    "startedAt": 1789823168204,
+    "loadMs": 10336,
+    "agentMs": 264023,
+    "checkMs": 15098,
+    "finishedAt": 1789823457664
+  },
+  "tokens": {
+    "in": 2841,
+    "out": 9195,
+    "cacheRead": 42255
+  },
+  "turns": 5,
+  "toolCalls": {
+    "total": 4,
+    "byName": {
+      "write": 1,
+      "bash": 3
+    }
+  },
+  "toolErrors": 1,
+  "isolation": {
+    "breaches": 0
+  },
+  "tps": {
+    "decode": 32.81,
+    "effective": 34.9,
+    "samples": 88
+  },
+  "errors": [],
+  "final": "Ich habe im aktuellen Verzeichnis die Datei `index.html` angelegt: ein komplett in einer Datei gehaltenes Snake-Spiel mit 20×20-Canvas, Pfeiltasten-Steuerung (inkl. 180°-Wende-Schutz über eine Richtungs-Queue), Start/Pause über Leertaste/Enter/P, zufälligem Futter auf freien Feldern, Punktestand „Punkte: N“ plus Highscore in `localStorage`, Game-Over-Overlay mit Neustart und leicht steigendem Tempo pro Futter — Syntax und Initialisierung sind per Node-Smoke-Test verifiziert.",
+  "artifacts": [
+    {
+      "path": "index.html",
+      "size": 7767
+    }
+  ],
+  "checks": [
+    {
+      "id": "entry",
+      "label": "index.html existiert",
+      "type": "file-exists",
+      "ok": true,
+      "detail": "index.html"
+    },
+    {
+      "id": "single",
+      "label": "Kein externes Skript (alles in einer Datei)",
+      "type": "script",
+      "ok": true,
+      "detail": null
+    },
+    {
+      "id": "load",
+      "label": "Lädt ohne Konsolenfehler",
+      "type": "loads-without-errors",
+      "ok": true,
+      "detail": null
+    },
+    {
+      "id": "canvas",
+      "label": "Spielfeld ist ein <canvas>",
+      "type": "selector",
+      "ok": true,
+      "detail": null
+    },
+    {
+      "id": "score",
+      "label": "Punktestand wird angezeigt",
+      "type": "script",
+      "ok": true,
+      "detail": null
+    },
+    {
+      "id": "start",
+      "label": "Startet per Taste und bewegt sich",
+      "type": "keys-change-canvas",
+      "ok": true,
+      "detail": "Spielfeld hat sich verändert"
+    },
+    {
+      "id": "steer",
+      "label": "Pfeiltasten verändern das Spielfeld",
+      "type": "keys-change-canvas",
+      "ok": true,
+      "detail": "Spielfeld hat sich verändert"
+    },
+    {
+      "id": "pause",
+      "label": "P pausiert (Spielfeld bleibt stehen)",
+      "type": "script",
+      "ok": true,
+      "detail": null
+    },
+    {
+      "id": "gameover",
+      "label": "Game Over, wenn die Schlange die Wand trifft (Text oder Spielfeld steht still)",
+      "type": "script",
+      "ok": true,
+      "detail": null
+    }
+  ],
+  "console": [
+    {
+      "level": "error",
+      "text": "Failed to load resource: the server responded with a status of 404 (Not Found) http://localhost/favicon.ico",
+      "source": "network"
+    }
+  ],
+  "score": {
+    "checksPassed": 9,
+    "checksTotal": 9,
+    "auto": 100,
+    "manual": null
+  },
+  "points": {
+    "checks": 100,
+    "manual": null,
+    "tps": 38.7,
+    "time": 61.2,
+    "speed": 50,
+    "score": 77.8
+  },
+  "manual": null,
+  "screenshot": true,
+  "mobileScreenshot": false
+}

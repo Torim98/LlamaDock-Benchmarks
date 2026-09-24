@@ -1,5 +1,119 @@
 {
-  "generatedAt": "2026-09-20T05:29:38.189Z",
+  "generatedAt": "2026-09-19T13:01:00.611Z",
+  "weights": {
+    "manual": 35,
+    "checks": 25,
+    "speed": 20,
+    "external": 20
+  },
+  "components": [
+    {
+      "id": "manual",
+      "label": "Bewertung"
+    },
+    {
+      "id": "checks",
+      "label": "Checks"
+    },
+    {
+      "id": "speed",
+      "label": "Tempo"
+    },
+    {
+      "id": "external",
+      "label": "Extern"
+    }
+  ],
+  "categories": [
+    {
+      "id": "intelligence",
+      "label": "Overall Intelligence",
+      "icon": "🧠",
+      "ranking": [
+        {
+          "configId": "e7b69f6c51",
+          "score": 94.2,
+          "scenarios": 2,
+          "external": true
+        },
+        {
+          "configId": "4700cd4848",
+          "score": 82.2,
+          "scenarios": 2,
+          "external": true
+        }
+      ]
+    },
+    {
+      "id": "coding",
+      "label": "Coding",
+      "icon": "💻",
+      "ranking": [
+        {
+          "configId": "e7b69f6c51",
+          "score": 94.1,
+          "scenarios": 2,
+          "external": true
+        },
+        {
+          "configId": "4700cd4848",
+          "score": 88.9,
+          "scenarios": 2,
+          "external": true
+        }
+      ]
+    },
+    {
+      "id": "speed",
+      "label": "Speed",
+      "icon": "⚡",
+      "ranking": [
+        {
+          "configId": "e7b69f6c51",
+          "score": 98.6,
+          "scenarios": 2,
+          "external": false
+        },
+        {
+          "configId": "4700cd4848",
+          "score": 48,
+          "scenarios": 2,
+          "external": false
+        }
+      ]
+    },
+    {
+      "id": "writing",
+      "label": "Writing & Scientific Writing",
+      "icon": "✍️",
+      "ranking": [
+        {
+          "configId": "e7b69f6c51",
+          "score": 91.3,
+          "scenarios": 0,
+          "external": true
+        },
+        {
+          "configId": "4700cd4848",
+          "score": 79.5,
+          "scenarios": 0,
+          "external": true
+        }
+      ]
+    },
+    {
+      "id": "image",
+      "label": "Image Gen",
+      "icon": "🎨",
+      "ranking": []
+    },
+    {
+      "id": "routing",
+      "label": "Routing (Laya)",
+      "icon": "🧭",
+      "ranking": []
+    }
+  ],
   "scenarios": {
     "game": {
       "id": "game",
@@ -7,6 +121,16 @@
       "version": 1,
       "description": "Ein spielbares Snake auf Canvas in einer einzigen HTML-Datei. Prüft Spiellogik, Steuerung und Fehlerfreiheit.",
       "prompt": "Programmiere im aktuellen Verzeichnis das Spiel **Snake** als **eine einzige Datei `index.html`** (HTML, CSS und JavaScript inline, keine externen Bibliotheken, kein Build-Schritt).\n\nAnforderungen:\n\n1. Spielfeld als `<canvas>`, Raster 20 × 20 Felder, gut sichtbar zentriert.\n2. Steuerung mit den Pfeiltasten. Eine direkte 180°-Wende (z. B. von rechts nach links) ist nicht erlaubt.\n3. Start mit Leertaste oder Enter; vorher steht ein kurzer Hinweis auf dem Spielfeld. `P` pausiert und setzt fort.\n4. Futter erscheint zufällig auf einem freien Feld. Frisst die Schlange es, wächst sie um ein Glied und der Punktestand steigt um 1.\n5. Der Punktestand steht sichtbar über dem Spielfeld als „Punkte: N“. Der Highscore wird in `localStorage` gespeichert und angezeigt.\n6. Berührt die Schlange die Wand oder sich selbst, ist das Spiel vorbei: „Game Over“ erscheint, Leertaste/Enter startet neu.\n7. Das Tempo steigt leicht mit jedem gefressenen Futter.\n8. Keine Konsolenfehler.\n\nWenn du fertig bist, antworte mit einem Satz, was du gebaut hast.\n",
+      "tools": [
+        "read",
+        "bash",
+        "edit",
+        "write"
+      ],
+      "timeLimitSec": 900,
+      "categories": [
+        "coding"
+      ],
       "rubric": [
         {
           "id": "playable",
@@ -77,12 +201,171 @@
         }
       ]
     },
+    "image-poster": {
+      "id": "image-poster",
+      "name": "Konzert-Plakat mit dem Bildmodell",
+      "version": 1,
+      "description": "Der Agent erzeugt über generate_image ein Plakat mit vorgegebenem Text und zeigt es auf einer Seite. Prüft Bild-Prompting, Schrift im Bild und Selbstkontrolle.",
+      "prompt": "Gestalte im aktuellen Verzeichnis ein **Konzert-Plakat** für die fiktive Band **„Neon Moths“** und zeige es auf einer kleinen Webseite.\n\nAnforderungen:\n\n1. Erzeuge das Plakat mit dem Tool `generate_image` im Hochformat (**832 × 1216** Pixel) und speichere es als `poster.png` (Parameter `output_path`).\n2. Auf dem Plakat steht gut lesbar der Bandname **NEON MOTHS** und die Zeile **LIVE · 14.11.2026 · KÖLN**.\n3. Stil: Synthwave / Retro-Futurismus, nächtliche Stadt, Motten, die um eine Neonlampe kreisen. Stimmige Farben, klare Komposition.\n4. Prüfe das Ergebnis. Wenn Text fehlt oder falsch geschrieben ist, erzeuge das Bild erneut (höchstens drei Versuche insgesamt).\n5. Eine Datei `index.html`, die `poster.png` zentriert anzeigt (`<img src=\"poster.png\" alt=\"…\">` mit sinnvollem Alternativtext) und darunter in `<p class=\"caption\">` in einem Satz beschreibt, was zu sehen ist. Keine externen Ressourcen.\n\nWenn du fertig bist, antworte mit der Anzahl der Bildversuche.\n",
+      "tools": [
+        "read",
+        "bash",
+        "edit",
+        "write",
+        "generate_image"
+      ],
+      "timeLimitSec": 1500,
+      "categories": [
+        "image"
+      ],
+      "rubric": [
+        {
+          "id": "text",
+          "label": "Schrift im Bild",
+          "hint": "NEON MOTHS und LIVE · 14.11.2026 · KÖLN korrekt und lesbar"
+        },
+        {
+          "id": "prompt",
+          "label": "Vorgaben umgesetzt",
+          "hint": "Synthwave, Stadt bei Nacht, Motten an der Neonlampe"
+        },
+        {
+          "id": "quality",
+          "label": "Bildqualität",
+          "hint": "Komposition, Farben, keine Artefakte"
+        },
+        {
+          "id": "page",
+          "label": "Seite & Beschreibung",
+          "hint": "Sauber eingebunden, Caption beschreibt das Bild zutreffend"
+        }
+      ],
+      "checks": [
+        {
+          "id": "poster",
+          "label": "poster.png existiert",
+          "type": "file-exists"
+        },
+        {
+          "id": "entry",
+          "label": "index.html existiert",
+          "type": "file-exists"
+        },
+        {
+          "id": "load",
+          "label": "Lädt ohne Konsolenfehler",
+          "type": "loads-without-errors"
+        },
+        {
+          "id": "img",
+          "label": "Plakat wird angezeigt (Hochformat, geladen)",
+          "type": "script"
+        },
+        {
+          "id": "alt",
+          "label": "Sinnvoller Alternativtext",
+          "type": "script"
+        },
+        {
+          "id": "caption",
+          "label": "Bildbeschreibung in p.caption",
+          "type": "selector"
+        }
+      ]
+    },
+    "scientific": {
+      "id": "scientific",
+      "name": "Wissenschaftlicher Übersichtsartikel",
+      "version": 1,
+      "description": "Mini-Review auf Deutsch über die Quantisierung von Sprachmodellen mit fester Gliederung, Vergleichstabelle und nummerierter Literatur. Prüft wissenschaftliches Schreiben und Quellenehrlichkeit.",
+      "prompt": "Verfasse im aktuellen Verzeichnis einen **kurzen wissenschaftlichen Übersichtsartikel (Mini-Review) auf Deutsch** zum Thema:\n\n> **„Quantisierung großer Sprachmodelle: Verfahren, Qualitätsverlust und Auswirkungen auf die Inferenz“**\n\nAnforderungen:\n\n1. Eine Datei `index.html` mit semantischem HTML (`<article>`, `<h1>`, `<h2>`, `<p>`, `<table>`, `<ol>`), schlichtes Inline-CSS erlaubt, keine externen Ressourcen, kein JavaScript.\n2. Gliederung mit genau diesen Abschnitten als `<h2>`: **Abstract**, **Einleitung**, **Methoden der Quantisierung**, **Diskussion**, **Fazit**, **Literatur**.\n3. Länge des Fließtexts ohne Literaturliste: **900 bis 1400 Wörter**.\n4. Mindestens **eine Tabelle** (`<table>`), die Verfahren vergleicht (z. B. Bit-Breite, Speicherbedarf, typischer Qualitätsverlust – qualitativ, wenn keine belastbaren Zahlen bekannt sind).\n5. Zitierweise: nummerierte Verweise im Text in eckigen Klammern (`[1]`, `[2]`, …), die Literaturliste als `<ol>` mit **mindestens fünf** Einträgen. Nenne nur Arbeiten, die du sicher kennst (Autoren, Titel, Jahr); **erfinde keine Quellen**.\n6. Sachlicher, präziser Stil; Behauptungen sind belegt oder als Einschätzung gekennzeichnet.\n\nWenn du fertig bist, antworte mit der Anzahl der Literatureinträge.\n",
+      "tools": [
+        "read",
+        "bash",
+        "edit",
+        "write"
+      ],
+      "timeLimitSec": 1200,
+      "categories": [
+        "writing",
+        "intelligence"
+      ],
+      "rubric": [
+        {
+          "id": "accuracy",
+          "label": "Fachlich korrekt",
+          "hint": "Verfahren (z. B. GPTQ, AWQ, k-Quants, QAT) richtig beschrieben, keine falschen Zahlen"
+        },
+        {
+          "id": "sources",
+          "label": "Quellen ehrlich",
+          "hint": "Existierende Arbeiten, korrekt zugeordnet, nichts erfunden"
+        },
+        {
+          "id": "rigor",
+          "label": "Wissenschaftlicher Stil",
+          "hint": "Präzise, belegt, Einschätzungen gekennzeichnet"
+        },
+        {
+          "id": "structure",
+          "label": "Aufbau",
+          "hint": "Abstract fasst zusammen, Diskussion wägt ab, Fazit folgt aus dem Text"
+        }
+      ],
+      "checks": [
+        {
+          "id": "entry",
+          "label": "index.html existiert",
+          "type": "file-exists"
+        },
+        {
+          "id": "load",
+          "label": "Lädt ohne Konsolenfehler",
+          "type": "loads-without-errors"
+        },
+        {
+          "id": "sections",
+          "label": "Abschnitte Abstract, Einleitung, Methoden der Quantisierung, Diskussion, Fazit, Literatur",
+          "type": "script"
+        },
+        {
+          "id": "table",
+          "label": "Vergleichstabelle vorhanden",
+          "type": "selector"
+        },
+        {
+          "id": "refs",
+          "label": "Mindestens 5 Literatureinträge",
+          "type": "selector-count"
+        },
+        {
+          "id": "cites",
+          "label": "Nummerierte Verweise im Text ([1], [2], …)",
+          "type": "script"
+        },
+        {
+          "id": "length",
+          "label": "900–1400 Wörter ohne Literatur",
+          "type": "script"
+        }
+      ]
+    },
     "website": {
       "id": "website",
       "name": "Landingpage nach Spezifikation",
       "version": 1,
       "description": "Eine responsive Landingpage für ein fiktives Produkt, nur HTML/CSS/JS ohne Build-Schritt. Prüft Spezifikationstreue, sauberes Markup und Optik.",
       "prompt": "Baue im aktuellen Verzeichnis eine Landingpage für die fiktive App **„Nachtfalter“**, einen Schlaf-Tracker, der ohne Cloud auskommt.\n\nAnforderungen:\n\n1. Eine Datei `index.html` (CSS und JavaScript dürfen inline oder in `style.css` / `script.js` liegen). Keine Frameworks, keine CDNs, kein Build-Schritt. Die Seite muss direkt im Browser funktionieren.\n2. Dunkles Design (Nachtblau/Violett), gut lesbar, moderne Optik.\n3. Abschnitte in dieser Reihenfolge:\n   - Kopfzeile mit Logo-Schriftzug „Nachtfalter“ und Navigation mit Links auf `#features`, `#pricing` und `#contact`.\n   - Hero mit `<h1>`, einem Satz Untertitel und einem Button „Kostenlos testen“.\n   - `<section id=\"features\">` mit genau drei Features (je Überschrift + ein Satz): „Offline-first“, „Sanfter Wecker“, „Schlafphasen“.\n   - `<section id=\"pricing\">` mit drei Plänen als Karten mit Klasse `plan`: „Basis“ (0 €), „Plus“ (3 €/Monat), „Familie“ (6 €/Monat). Der Plan „Plus“ ist hervorgehoben.\n   - `<section id=\"contact\">` mit einem Formular: Name, E-Mail (`type=\"email\"`), Nachricht, Absenden-Button. Beim Absenden wird **nicht** neu geladen: Ungültige E-Mail → Fehlermeldung direkt am Feld, gültige Eingaben → Dankesmeldung statt des Formulars.\n   - Fußzeile mit „© 2026 Nachtfalter“.\n4. Responsiv: Auf 375 px Breite darf nichts horizontal überlaufen, die Pläne stehen dann untereinander.\n5. Keine Konsolenfehler.\n\nWenn du fertig bist, antworte mit einer kurzen Liste der erstellten Dateien.\n",
+      "tools": [
+        "read",
+        "bash",
+        "edit",
+        "write"
+      ],
+      "timeLimitSec": 900,
+      "categories": [
+        "coding"
+      ],
       "rubric": [
         {
           "id": "requirements",
@@ -157,14 +440,419 @@
           "type": "script"
         }
       ]
+    },
+    "writing": {
+      "id": "writing",
+      "name": "Populärwissenschaftlicher Artikel",
+      "version": 1,
+      "description": "Ein deutscher Artikel für Laien über Träume und Schlafforschung (700–1000 Wörter) als semantisches HTML. Prüft Aufbau, Länge, Verständlichkeit und Stil.",
+      "prompt": "Schreibe im aktuellen Verzeichnis einen **populärwissenschaftlichen Artikel auf Deutsch** zum Thema:\n\n> **„Warum wir träumen – was die Schlafforschung heute weiß“**\n\nAnforderungen:\n\n1. Eine Datei `index.html`, die den Artikel als sauberes, semantisches HTML enthält (`<article>`, `<h1>`, `<h2>`, `<p>`, ggf. `<blockquote>`). Schlichtes Inline-CSS für gute Lesbarkeit ist erlaubt, keine externen Ressourcen, kein JavaScript.\n2. Länge: **700 bis 1000 Wörter** Fließtext.\n3. Aufbau: eine Überschrift (`<h1>`), ein kurzer Vorspann (Teaser) in `<p class=\"lead\">`, **mindestens drei Zwischenüberschriften** (`<h2>`) und ein Schluss mit einem Ausblick.\n4. Zielgruppe: interessierte Laien. Fachbegriffe (z. B. REM-Schlaf) werden beim ersten Auftreten erklärt.\n5. Inhaltlich korrekt; wo die Forschung uneinig ist, sag das. Keine erfundenen Studien, Zahlen oder Zitate.\n6. Guter Stil: anschaulicher Einstieg, abwechslungsreiche Sätze, keine Aufzählungs-Wüste.\n\nWenn du fertig bist, antworte mit der Wortzahl des Artikels.\n",
+      "tools": [
+        "read",
+        "bash",
+        "edit",
+        "write"
+      ],
+      "timeLimitSec": 900,
+      "categories": [
+        "writing"
+      ],
+      "rubric": [
+        {
+          "id": "accuracy",
+          "label": "Inhaltlich korrekt",
+          "hint": "Stand der Forschung, keine erfundenen Studien oder Zahlen, Unsicherheit benannt"
+        },
+        {
+          "id": "clarity",
+          "label": "Verständlich",
+          "hint": "Fachbegriffe erklärt, roter Faden, für Laien zugänglich"
+        },
+        {
+          "id": "style",
+          "label": "Stil",
+          "hint": "Anschaulicher Einstieg, abwechslungsreiche Sätze, gutes Deutsch"
+        },
+        {
+          "id": "structure",
+          "label": "Aufbau",
+          "hint": "Teaser, sinnvolle Zwischenüberschriften, runder Schluss"
+        }
+      ],
+      "checks": [
+        {
+          "id": "entry",
+          "label": "index.html existiert",
+          "type": "file-exists"
+        },
+        {
+          "id": "load",
+          "label": "Lädt ohne Konsolenfehler",
+          "type": "loads-without-errors"
+        },
+        {
+          "id": "article",
+          "label": "<article> mit <h1>",
+          "type": "selector"
+        },
+        {
+          "id": "lead",
+          "label": "Vorspann in p.lead",
+          "type": "selector"
+        },
+        {
+          "id": "sections",
+          "label": "Mindestens 3 Zwischenüberschriften",
+          "type": "selector-count"
+        },
+        {
+          "id": "length",
+          "label": "700–1000 Wörter",
+          "type": "script"
+        },
+        {
+          "id": "rem",
+          "label": "Erklärt den REM-Schlaf",
+          "type": "text-contains"
+        },
+        {
+          "id": "mobile",
+          "label": "Kein horizontales Scrollen bei 375 px",
+          "type": "no-horizontal-scroll"
+        }
+      ]
     }
   },
-  "models": {},
+  "models": {
+    "ternary-bonsai-2-27b-ptq1-0": {
+      "slug": "ternary-bonsai-2-27b-ptq1-0",
+      "file": "Ternary-Bonsai-2-27B-PTQ1_0",
+      "recipe": "bonsai-2-27b",
+      "name": "Bonsai 2 27B",
+      "configs": [
+        "e7b69f6c51"
+      ],
+      "runs": 2,
+      "best": 95.7,
+      "bestRank": 1
+    },
+    "qwen3-8-27b-uncensored-q4-k-m": {
+      "slug": "qwen3-8-27b-uncensored-q4-k-m",
+      "file": "Qwen3.8-27B-Uncensored-Q4_K_M",
+      "recipe": "qwen3.8-27b-uncensored",
+      "name": "Qwen3.8 27B Uncensored",
+      "configs": [
+        "4700cd4848"
+      ],
+      "runs": 2,
+      "best": 75,
+      "bestRank": 2
+    }
+  },
+  "configs": [
+    {
+      "configId": "e7b69f6c51",
+      "routing": false,
+      "categories": {
+        "intelligence": {
+          "score": 94.2,
+          "scenarios": 2,
+          "external": true
+        },
+        "coding": {
+          "score": 94.1,
+          "scenarios": 2,
+          "external": true
+        },
+        "speed": {
+          "score": 98.6,
+          "scenarios": 2,
+          "external": false
+        },
+        "writing": {
+          "score": 91.3,
+          "scenarios": 0,
+          "external": true
+        },
+        "image": null,
+        "routing": null
+      },
+      "model": "Ternary-Bonsai-2-27B-PTQ1_0",
+      "modelSlug": "ternary-bonsai-2-27b-ptq1-0",
+      "profile": {
+        "id": "bonsai-2-27b-ptq1-262k",
+        "name": "Bonsai 2 27B · PTQ1_0 · 262k",
+        "provider": "llamacpp",
+        "model": "Ternary-Bonsai-2-27B-PTQ1_0.gguf",
+        "mmproj": "Ternary-Bonsai-2-27B-mmproj-Q8_0.gguf",
+        "recipe": "bonsai-2-27b",
+        "server": {
+          "ngl": 99,
+          "ctx": 262144,
+          "kvCache": "q8_0",
+          "flashAttention": true,
+          "parallel": 1,
+          "ub": 1024,
+          "jinja": true,
+          "build": "prism",
+          "cpuMoe": null,
+          "extraArgs": []
+        },
+        "ninfer": null,
+        "sampling": {
+          "temp": 1,
+          "top_p": 0.95,
+          "top_k": 20,
+          "min_p": 0,
+          "repeat_penalty": 1,
+          "presence_penalty": 0
+        },
+        "thinking": "medium",
+        "reasoningEfforts": null,
+        "maxTokens": 32768,
+        "router": null
+      },
+      "thinking": "medium",
+      "parts": {
+        "manual": null,
+        "checks": 100,
+        "speed": 98.6,
+        "external": 87.5
+      },
+      "external": {
+        "value": 87.5,
+        "n": 6,
+        "from": "bonsai-2-27b"
+      },
+      "score": 95.7,
+      "scenarios": [
+        {
+          "id": "website",
+          "categories": [
+            "coding"
+          ],
+          "runs": [
+            "20260919130100-website-01"
+          ],
+          "manual": null,
+          "checks": 100,
+          "speed": 97.1
+        },
+        {
+          "id": "game",
+          "categories": [
+            "coding"
+          ],
+          "runs": [
+            "20260919093254-game-01"
+          ],
+          "manual": null,
+          "checks": 100,
+          "speed": 100
+        }
+      ],
+      "runs": [
+        "20260919130100-website-01",
+        "20260919093254-game-01"
+      ],
+      "rated": 0,
+      "tps": 82.4,
+      "agentMs": 228970,
+      "rank": 1,
+      "label": "Bonsai 2 27B · PTQ1_0 · 262k",
+      "systemPrompt": null,
+      "tools": [
+        "read",
+        "bash",
+        "edit",
+        "write"
+      ],
+      "hardware": {
+        "gpu": "NVIDIA GeForce RTX 4090",
+        "vramMB": 24564,
+        "driver": "610.88",
+        "cuda": "13.3",
+        "cpu": "AMD Ryzen 7 7800X3D 8-Core Processor",
+        "threads": 16,
+        "ramGB": 63,
+        "os": "Windows_NT 10.0.26200"
+      },
+      "provider": {
+        "id": "llamacpp",
+        "build": "prism",
+        "version": "0.2.0-dev (build 10685, commit 7dffb158d)"
+      },
+      "harness": {
+        "id": "pi",
+        "version": "0.85.1"
+      },
+      "lastRun": "2026-09-19T13:01:00.545Z"
+    },
+    {
+      "configId": "4700cd4848",
+      "routing": false,
+      "categories": {
+        "intelligence": {
+          "score": 82.2,
+          "scenarios": 2,
+          "external": true
+        },
+        "coding": {
+          "score": 88.9,
+          "scenarios": 2,
+          "external": true
+        },
+        "speed": {
+          "score": 48,
+          "scenarios": 2,
+          "external": false
+        },
+        "writing": {
+          "score": 79.5,
+          "scenarios": 0,
+          "external": true
+        },
+        "image": null,
+        "routing": null
+      },
+      "model": "Qwen3.8-27B-Uncensored-Q4_K_M",
+      "modelSlug": "qwen3-8-27b-uncensored-q4-k-m",
+      "profile": {
+        "id": "qwen3.8-27b-q4km-262k",
+        "name": "Qwen3.8 27B Uncensored · Q4_K_M · 262k",
+        "provider": "llamacpp",
+        "model": "Qwen3.8-27B-Uncensored-Q4_K_M.gguf",
+        "mmproj": null,
+        "recipe": "qwen3.8-27b-uncensored",
+        "server": {
+          "ngl": 99,
+          "ctx": 262144,
+          "kvCache": "q4_0",
+          "flashAttention": true,
+          "parallel": 1,
+          "ub": 1024,
+          "jinja": true,
+          "build": null,
+          "cpuMoe": null,
+          "extraArgs": []
+        },
+        "ninfer": null,
+        "sampling": {
+          "temp": 1,
+          "top_p": 0.95,
+          "top_k": 20,
+          "min_p": 0,
+          "repeat_penalty": 1,
+          "presence_penalty": 0
+        },
+        "thinking": "medium",
+        "reasoningEfforts": null,
+        "maxTokens": 32768,
+        "router": null
+      },
+      "thinking": "medium",
+      "parts": {
+        "manual": null,
+        "checks": 100,
+        "speed": 48,
+        "external": 70.8
+      },
+      "external": {
+        "value": 70.8,
+        "n": 6,
+        "from": "qwen3.8-27b",
+        "inherited": true
+      },
+      "score": 75,
+      "scenarios": [
+        {
+          "id": "website",
+          "categories": [
+            "coding"
+          ],
+          "runs": [
+            "20260919130100-website-02"
+          ],
+          "manual": null,
+          "checks": 100,
+          "speed": 46
+        },
+        {
+          "id": "game",
+          "categories": [
+            "coding"
+          ],
+          "runs": [
+            "20260919130100-game-01"
+          ],
+          "manual": null,
+          "checks": 100,
+          "speed": 50
+        }
+      ],
+      "runs": [
+        "20260919130100-website-02",
+        "20260919130100-game-01"
+      ],
+      "rated": 0,
+      "tps": 37.7,
+      "agentMs": 486713,
+      "rank": 2,
+      "label": "Qwen3.8 27B Uncensored · Q4_K_M · 262k",
+      "systemPrompt": null,
+      "tools": [
+        "read",
+        "bash",
+        "edit",
+        "write"
+      ],
+      "hardware": {
+        "gpu": "NVIDIA GeForce RTX 4090",
+        "vramMB": 24564,
+        "driver": "610.88",
+        "cuda": "13.3",
+        "cpu": "AMD Ryzen 7 7800X3D 8-Core Processor",
+        "threads": 16,
+        "ramGB": 63,
+        "os": "Windows_NT 10.0.26200"
+      },
+      "provider": {
+        "id": "llamacpp",
+        "build": null,
+        "version": "0.3.0-dev (build 10622, commit 3737e4137)"
+      },
+      "harness": {
+        "id": "pi",
+        "version": "0.85.1"
+      },
+      "lastRun": "2026-09-19T13:01:00.611Z"
+    }
+  ],
   "recipes": {
     "bonsai-2-27b": {
       "name": "Bonsai 2 27B (PrismML, ternär)",
+      "short": "Bonsai 2 27B",
+      "description": "Qwen3.8-27B, von PrismML auf ternäre Gewichte {−1, 0, +1} komprimiert (1,72 Bit/Gewicht, 98,2 % der FP16-Benchmarks). 6–7 GB statt 54 GB: passt mit vollem 262k-Kontext und q8_0-KV auf 24 GB. Rolle in LlamaDock: schnelles Workhorse für Subagents. Braucht den PrismML-llama.cpp-Fork (Build prism); Mainline lehnt PTQ1_0/PQ2_0 ab.",
       "hfRepo": "prism-ml/Ternary-Bonsai-2-27B-gguf",
+      "baseModel": "Qwen/Qwen3.8-27B",
       "license": "apache-2.0",
+      "paramsB": 27.36,
+      "architecture": "Wie Qwen3.8-27B: Gated DeltaNet + Full Attention (jede 4. Schicht), 64 Schichten",
+      "thinking": true,
+      "vision": true,
+      "toolCalling": true,
+      "quants": [
+        {
+          "name": "PTQ1_0",
+          "file": "Ternary-Bonsai-2-27B-PTQ1_0.gguf",
+          "size": 5946648928
+        },
+        {
+          "name": "PQ2_0",
+          "file": "Ternary-Bonsai-2-27B-PQ2_0.gguf",
+          "size": 7206168928
+        }
+      ],
       "sources": [
         {
           "label": "Hugging Face: prism-ml/Ternary-Bonsai-2-27B-gguf",
@@ -182,8 +870,58 @@
     },
     "gemma-4-31b": {
       "name": "Gemma 4 31B (Google, dicht)",
+      "short": "Gemma 4 31B",
+      "description": "Größtes dichtes Gemma-4-Modell (April 2026, Apache 2.0) und das beste Gemma, das auf 24 GB passt. Stark bei Texten in vielen Sprachen (auch Deutsch), Stil und Tonfall; deshalb in LlamaDock das Profil fürs Schreiben (Router-Bereich „writing“). Empfohlen: Unsloths Dynamic-Quant auf Basis von Googles QAT-Checkpoint (quantisierungsbewusst trainiert, bei 4 Bit nahe an BF16). Hybride Attention: nur jede 6. Schicht sieht den ganzen Kontext, die übrigen ein Fenster von 1024 Tokens → kleiner KV-Cache.",
       "hfRepo": "unsloth/gemma-4-31B-it-GGUF",
+      "baseModel": "google/gemma-4-31B-it",
       "license": "apache-2.0",
+      "paramsB": 30.7,
+      "architecture": "60 Schichten, davon 10 Full Attention (4 KV-Köpfe × 512) und 50 Sliding Window 1024 (16 KV-Köpfe × 256)",
+      "thinking": true,
+      "vision": true,
+      "toolCalling": true,
+      "quants": [
+        {
+          "name": "Q3_K_M",
+          "file": "gemma-4-31B-it-Q3_K_M.gguf",
+          "size": 14736608192
+        },
+        {
+          "name": "UD-Q3_K_XL",
+          "file": "gemma-4-31B-it-UD-Q3_K_XL.gguf",
+          "size": 15380222912
+        },
+        {
+          "name": "IQ4_XS",
+          "file": "gemma-4-31B-it-IQ4_XS.gguf",
+          "size": 16372460480
+        },
+        {
+          "name": "QAT-UD-Q4_K_XL",
+          "file": "gemma-4-31B-it-qat-UD-Q4_K_XL.gguf",
+          "size": 17287670048
+        },
+        {
+          "name": "Q4_K_M",
+          "file": "gemma-4-31B-it-Q4_K_M.gguf",
+          "size": 18323733440
+        },
+        {
+          "name": "UD-Q4_K_XL",
+          "file": "gemma-4-31B-it-UD-Q4_K_XL.gguf",
+          "size": 18822970304
+        },
+        {
+          "name": "Q5_K_M",
+          "file": "gemma-4-31B-it-Q5_K_M.gguf",
+          "size": 21658401728
+        },
+        {
+          "name": "Q6_K",
+          "file": "gemma-4-31B-it-Q6_K.gguf",
+          "size": 25201486784
+        }
+      ],
       "sources": [
         {
           "label": "Hugging Face: google/gemma-4-31B-it",
@@ -201,8 +939,48 @@
     },
     "qwen3.8-27b-uncensored": {
       "name": "Qwen3.8 27B Uncensored",
+      "short": "Qwen3.8 27B Uncensored",
+      "description": "Heretic-Abliteration von Qwen3.8-27B (kaum Qualitätsverlust laut KL-Divergenz), mit eingebautem MTP-Kopf für Speculative Decoding. Das bisherige Standardmodell von LlamaDock.",
       "hfRepo": "JonathanColetti/Qwen3.8-27B-Uncensored-GGUF",
+      "baseModel": "Qwen/Qwen3.8-27B",
       "license": "apache-2.0",
+      "paramsB": 27,
+      "architecture": "Hybrid: Gated DeltaNet + Full Attention (jede 4. Schicht), 64 Schichten + 1 MTP-Schicht",
+      "thinking": true,
+      "vision": true,
+      "toolCalling": true,
+      "quants": [
+        {
+          "name": "IQ2_M",
+          "file": "Qwen3.8-27B-Uncensored-IQ2_M.gguf",
+          "size": 10624771968
+        },
+        {
+          "name": "IQ4_XS",
+          "file": "Qwen3.8-27B-Uncensored-IQ4_XS.gguf",
+          "size": 15309039008
+        },
+        {
+          "name": "Q4_K_M",
+          "file": "Qwen3.8-27B-Uncensored-Q4_K_M.gguf",
+          "size": 16810714528
+        },
+        {
+          "name": "Q5_K_M",
+          "file": "Qwen3.8-27B-Uncensored-Q5_K_M.gguf",
+          "size": 19535701408
+        },
+        {
+          "name": "Q6_K",
+          "file": "Qwen3.8-27B-Uncensored-Q6_K.gguf",
+          "size": 22430999968
+        },
+        {
+          "name": "Q8_0",
+          "file": "Qwen3.8-27B-Uncensored-Q8_0.gguf",
+          "size": 29047084448
+        }
+      ],
       "sources": [
         {
           "label": "Hugging Face: JonathanColetti/Qwen3.8-27B-Uncensored-GGUF",
@@ -216,8 +994,53 @@
     },
     "qwen3.8-27b": {
       "name": "Qwen3.8 27B (offiziell, Unsloth-Quants)",
+      "short": "Qwen3.8 27B",
+      "description": "Das offizielle Qwen3.8-27B als Unsloth-Dynamic-Quants (UD). Thinking standardmäßig an, Vision über mmproj.",
       "hfRepo": "unsloth/Qwen3.8-27B-GGUF",
+      "baseModel": "Qwen/Qwen3.8-27B",
       "license": "apache-2.0",
+      "paramsB": 27,
+      "architecture": "Hybrid: Gated DeltaNet + Full Attention (jede 4. Schicht), 64 Schichten",
+      "thinking": true,
+      "vision": true,
+      "toolCalling": true,
+      "quants": [
+        {
+          "name": "UD-Q3_K_XL",
+          "file": "Qwen3.8-27B-UD-Q3_K_XL.gguf",
+          "size": 13146393504
+        },
+        {
+          "name": "UD-IQ4_XS",
+          "file": "Qwen3.8-27B-UD-IQ4_XS.gguf",
+          "size": 14252845984
+        },
+        {
+          "name": "UD-Q4_K_M",
+          "file": "Qwen3.8-27B-UD-Q4_K_M.gguf",
+          "size": 16464440224
+        },
+        {
+          "name": "UD-Q4_K_XL",
+          "file": "Qwen3.8-27B-UD-Q4_K_XL.gguf",
+          "size": 17559178144
+        },
+        {
+          "name": "UD-Q5_K_XL",
+          "file": "Qwen3.8-27B-UD-Q5_K_XL.gguf",
+          "size": 20876938144
+        },
+        {
+          "name": "UD-Q6_K",
+          "file": "Qwen3.8-27B-UD-Q6_K.gguf",
+          "size": 21983677344
+        },
+        {
+          "name": "Q8_0",
+          "file": "Qwen3.8-27B-Q8_0.gguf",
+          "size": 29047086048
+        }
+      ],
       "sources": [
         {
           "label": "Hugging Face: unsloth/Qwen3.8-27B-GGUF",
@@ -231,8 +1054,53 @@
     },
     "qwen3.8-flash-next": {
       "name": "Qwen3.8 Flash Next (Unsloth-Quants)",
+      "short": "Qwen3.8 Flash Next",
+      "description": "125B-MoE (6B aktiv) mit der Architektur von Qwen4: Gated DeltaNet + Qwen Sparse Attention, 512 Experten, zusätzlich 51B N-gram-Embeddings. Passt nie ganz in 24 GB VRAM: Experten und Embeddings liegen im RAM (llama.cpp --fit verteilt automatisch). Braucht llama.cpp ≥ b10700 (qwen4exp), deshalb eigener Build b11040.",
       "hfRepo": "unsloth/Qwen3.8-Flash-Next-GGUF",
+      "baseModel": "Qwen/Qwen3.8-Flash-Next",
       "license": "qwen-community-1.0",
+      "paramsB": 176,
+      "architecture": "Hybrid: Gated DeltaNet + Qwen Sparse Attention (jede 4. Schicht), 48 Schichten, MoE 512 Experten (10 + 1 shared aktiv)",
+      "thinking": true,
+      "vision": true,
+      "toolCalling": true,
+      "quants": [
+        {
+          "name": "UD-IQ1_M",
+          "file": "Qwen3.8-Flash-Next-UD-IQ1_M-00001-of-00003.gguf",
+          "size": 74538755776
+        },
+        {
+          "name": "UD-IQ1_S",
+          "file": "Qwen3.8-Flash-Next-UD-IQ1_S-00001-of-00003.gguf",
+          "size": 72546461344
+        },
+        {
+          "name": "UD-IQ3_XXS",
+          "file": "Qwen3.8-Flash-Next-UD-IQ3_XXS-00001-of-00003.gguf",
+          "size": 81961823936
+        },
+        {
+          "name": "UD-IQ4_XS",
+          "file": "Qwen3.8-Flash-Next-UD-IQ4_XS-00001-of-00003.gguf",
+          "size": 93682584224
+        },
+        {
+          "name": "UD-Q2_K_XL",
+          "file": "Qwen3.8-Flash-Next-UD-Q2_K_XL-00001-of-00003.gguf",
+          "size": 78869128864
+        },
+        {
+          "name": "UD-Q3_K_XL",
+          "file": "Qwen3.8-Flash-Next-UD-Q3_K_XL-00001-of-00003.gguf",
+          "size": 89986353824
+        },
+        {
+          "name": "UD-Q4_K_XL",
+          "file": "Qwen3.8-Flash-Next-UD-Q4_K_XL-00001-of-00004.gguf",
+          "size": 111334654784
+        }
+      ],
       "sources": [
         {
           "label": "Hugging Face: unsloth/Qwen3.8-Flash-Next-GGUF",
@@ -293,9 +1161,10 @@
       {
         "benchmark": "Basismodell",
         "value": null,
+        "inherit": "qwen3.8-27b",
         "source": "https://huggingface.co/JonathanColetti/Qwen3.8-27B-Uncensored-GGUF",
         "date": "2026-09-19",
-        "note": "Abliterierte Variante von Qwen3.8-27B; keine eigenen Benchmarks veröffentlicht, Werte des Basismodells siehe qwen3.8-27b"
+        "note": "Abliterierte Variante von Qwen3.8-27B; keine eigenen Benchmarks veröffentlicht. Für den Score gelten die Werte des Basismodells (qwen3.8-27b)."
       }
     ],
     "bonsai-2-27b": [
@@ -343,5 +1212,234 @@
       }
     ]
   },
-  "runs": []
+  "runs": [
+    {
+      "id": "20260919130100-website-02",
+      "date": "2026-09-19T13:01:00.611Z",
+      "state": "done",
+      "batch": "20260919130100-website-02",
+      "configId": "4700cd4848",
+      "modelSlug": "qwen3-8-27b-uncensored-q4-k-m",
+      "scenario": {
+        "id": "website",
+        "name": "Landingpage nach Spezifikation",
+        "version": 1
+      },
+      "profile": {
+        "id": "qwen3.8-27b-q4km-262k",
+        "name": "Qwen3.8 27B Uncensored · Q4_K_M · 262k"
+      },
+      "thinking": "medium",
+      "hardware": {
+        "gpu": "NVIDIA GeForce RTX 4090"
+      },
+      "score": {
+        "checksPassed": 10,
+        "checksTotal": 10,
+        "auto": 100,
+        "manual": null
+      },
+      "points": {
+        "checks": 100,
+        "manual": null,
+        "tps": 50.2,
+        "time": 41.8,
+        "speed": 46,
+        "score": 76
+      },
+      "timing": {
+        "startedAt": 1789823457780,
+        "loadMs": 0,
+        "agentMs": 709403,
+        "checkMs": 3895,
+        "finishedAt": 1789824171080
+      },
+      "tokens": {
+        "in": 1777,
+        "out": 28048,
+        "cacheRead": 135040
+      },
+      "tps": {
+        "decode": 42.59,
+        "effective": 39.6,
+        "samples": 235
+      },
+      "turns": 6,
+      "toolCalls": {
+        "total": 7
+      },
+      "screenshot": true
+    },
+    {
+      "id": "20260919130100-game-01",
+      "date": "2026-09-19T13:01:00.610Z",
+      "state": "done",
+      "batch": "20260919130100-game-01",
+      "configId": "4700cd4848",
+      "modelSlug": "qwen3-8-27b-uncensored-q4-k-m",
+      "scenario": {
+        "id": "game",
+        "name": "Snake in einer HTML-Datei",
+        "version": 1
+      },
+      "profile": {
+        "id": "qwen3.8-27b-q4km-262k",
+        "name": "Qwen3.8 27B Uncensored · Q4_K_M · 262k"
+      },
+      "thinking": "medium",
+      "hardware": {
+        "gpu": "NVIDIA GeForce RTX 4090"
+      },
+      "score": {
+        "checksPassed": 9,
+        "checksTotal": 9,
+        "auto": 100,
+        "manual": null
+      },
+      "points": {
+        "checks": 100,
+        "manual": null,
+        "tps": 38.7,
+        "time": 61.2,
+        "speed": 50,
+        "score": 77.8
+      },
+      "timing": {
+        "startedAt": 1789823168204,
+        "loadMs": 10336,
+        "agentMs": 264023,
+        "checkMs": 15098,
+        "finishedAt": 1789823457664
+      },
+      "tokens": {
+        "in": 2841,
+        "out": 9195,
+        "cacheRead": 42255
+      },
+      "tps": {
+        "decode": 32.81,
+        "effective": 34.9,
+        "samples": 88
+      },
+      "turns": 5,
+      "toolCalls": {
+        "total": 4
+      },
+      "screenshot": true
+    },
+    {
+      "id": "20260919130100-website-01",
+      "date": "2026-09-19T13:01:00.545Z",
+      "state": "done",
+      "batch": "20260919130100-website-01",
+      "configId": "e7b69f6c51",
+      "modelSlug": "ternary-bonsai-2-27b-ptq1-0",
+      "scenario": {
+        "id": "website",
+        "name": "Landingpage nach Spezifikation",
+        "version": 1
+      },
+      "profile": {
+        "id": "bonsai-2-27b-ptq1-262k",
+        "name": "Bonsai 2 27B · PTQ1_0 · 262k"
+      },
+      "thinking": "medium",
+      "hardware": {
+        "gpu": "NVIDIA GeForce RTX 4090"
+      },
+      "score": {
+        "checksPassed": 10,
+        "checksTotal": 10,
+        "auto": 100,
+        "manual": null
+      },
+      "points": {
+        "checks": 100,
+        "manual": null,
+        "tps": 94.3,
+        "time": 100,
+        "speed": 97.1,
+        "score": 98.7
+      },
+      "timing": {
+        "startedAt": 1789822861502,
+        "loadMs": 5799,
+        "agentMs": 296334,
+        "checkMs": 3973,
+        "finishedAt": 1789823167610
+      },
+      "tokens": {
+        "in": 17076,
+        "out": 22065,
+        "cacheRead": 325567
+      },
+      "tps": {
+        "decode": 79.93,
+        "effective": 75,
+        "samples": 100
+      },
+      "turns": 19,
+      "toolCalls": {
+        "total": 18
+      },
+      "screenshot": true
+    },
+    {
+      "id": "20260919093254-game-01",
+      "date": "2026-09-19T09:32:54.062Z",
+      "state": "done",
+      "batch": "20260919093254-game-01",
+      "configId": "e7b69f6c51",
+      "modelSlug": "ternary-bonsai-2-27b-ptq1-0",
+      "scenario": {
+        "id": "game",
+        "name": "Snake in einer HTML-Datei",
+        "version": 1
+      },
+      "profile": {
+        "id": "bonsai-2-27b-ptq1-262k",
+        "name": "Bonsai 2 27B · PTQ1_0 · 262k"
+      },
+      "thinking": "medium",
+      "hardware": {
+        "gpu": "NVIDIA GeForce RTX 4090"
+      },
+      "score": {
+        "checksPassed": 9,
+        "checksTotal": 9,
+        "auto": 100,
+        "manual": null
+      },
+      "points": {
+        "checks": 100,
+        "manual": null,
+        "tps": 100,
+        "time": 100,
+        "speed": 100,
+        "score": 100
+      },
+      "timing": {
+        "startedAt": 1789810374574,
+        "loadMs": 3635,
+        "agentMs": 161606,
+        "checkMs": 15237,
+        "finishedAt": 1789810555055
+      },
+      "tokens": {
+        "in": 13896,
+        "out": 12595,
+        "cacheRead": 18642
+      },
+      "tps": {
+        "decode": 84.77,
+        "effective": 78.2,
+        "samples": 51
+      },
+      "turns": 4,
+      "toolCalls": {
+        "total": 3
+      },
+      "screenshot": true
+    }
+  ]
 }

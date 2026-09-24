@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Nachtfalter ist dein Schlaf-Tracker ohne Cloud: Offline-first, mit sanftem Wecker und Schlafphasen-Analyse – direkt auf deinem Gerät.">
+  <title>Nachtfalter – Dein Schlaf-Tracker ohne Cloud</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <a class="skip-link" href="#main">Zum Inhalt springen</a>
+
+  <header class="site-header">
+    <div class="container header-inner">
+      <a class="logo" href="#top">
+        <svg class="logo-mark" viewBox="0 0 24 24" width="24" height="24" aria-hidden="true" focusable="false">
+          <defs>
+            <linearGradient id="logo-grad" x1="0" y1="0" x2="24" y2="24" gradientUnits="userSpaceOnUse">
+              <stop stop-color="#c4b5fd"></stop>
+              <stop offset="1" stop-color="#7c5cff"></stop>
+            </linearGradient>
+          </defs>
+          <path fill="url(#logo-grad)" d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+        </svg>
+        Nachtfalter
+      </a>
+      <nav class="site-nav" aria-label="Hauptnavigation">
+        <a href="#features">Features</a>
+        <a href="#pricing">Preise</a>
+        <a href="#contact">Kontakt</a>
+      </nav>
+    </div>
+  </header>
+
+  <main id="main">
+    <!-- Hero -->
+    <section class="hero" id="top">
+      <div class="container">
+        <p class="hero-badge">🌙 Dein privat gehaltener Schlaf-Tracker</p>
+        <h1>Schlafe tief, wache sanft auf – <span class="grad-text">ganz ohne Cloud.</span></h1>
+        <p class="subtitle">Nachtfalter analysiert deine Nächte direkt auf deinem Gerät: privat, präzise und ohne Abo-Druck.</p>
+        <a class="btn btn-primary" href="#pricing">Kostenlos testen</a>
+        <p class="hero-note">Keine Kreditkarte nötig · Läuft offline auf Smartphone &amp; Tablet</p>
+      </div>
+    </section>
+
+    <!-- Features -->
+    <section class="section" id="features">
+      <div class="container">
+        <h2 class="section-title">Dein Nacht-Team</h2>
+        <p class="section-sub">Drei Funktionen, die dein Schlaferlebnis wirklich verbessern.</p>
+        <div class="features-grid">
+          <article class="feature-card">
+            <span class="feature-icon" aria-hidden="true">📵</span>
+            <h3>Offline-first</h3>
+            <p>Alle Daten bleiben auf deinem Gerät – kein Account, kein WLAN und keine Cloud nötig.</p>
+          </article>
+          <article class="feature-card">
+            <span class="feature-icon" aria-hidden="true">🌅</span>
+            <h3>Sanfter Wecker</h3>
+            <p>Der Wecker klingelt gezielt in einer leichten Schlafphase, damit du ausgeschlafen statt gerissen aufwachst.</p>
+          </article>
+          <article class="feature-card">
+            <span class="feature-icon" aria-hidden="true">📊</span>
+            <h3>Schlafphasen</h3>
+            <p>Nachtfalter ordnet jede Nacht automatisch in Tiefschlaf, Leicht- und REM-Phasen ein.</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- Preise -->
+    <section class="section" id="pricing">
+      <div class="container">
+        <h2 class="section-title">Preise</h2>
+        <p class="section-sub">Starte kostenlos und wechsle jederzeit – ohne Kleingedrucktes.</p>
+        <div class="plans-grid">
+          <article class="plan">
+            <h3 class="plan-name">Basis</h3>
+            <p class="plan-desc">Zum Kennenlernen</p>
+            <p class="price">0&nbsp;€<span class="per"> / Monat</span></p>
+            <ul class="plan-features">
+              <li>Schlaf-Tracking im Alltag</li>
+              <li>Täglicher Schlaf-Score</li>
+              <li>7 Tage Verlauf</li>
+            </ul>
+            <a class="btn btn-ghost" href="#contact">Loslegen</a>
+          </article>
+          <article class="plan highlighted">
+            <span class="badge">Beliebt</span>
+            <h3 class="plan-name">Plus</h3>
+            <p class="plan-desc">Für alle, die mehr wissen wollen</p>
+            <p class="price">3&nbsp;€<span class="per"> / Monat</span></p>
+            <ul class="plan-features">
+              <li>Alles aus Basis</li>
+              <li>Unbegrenzter Verlauf</li>
+              <li>Schlafphasen im Detail</li>
+              <li>Sanfter Wecker</li>
+            </ul>
+            <a class="btn btn-primary" href="#contact">Plus holen</a>
+          </article>
+          <article class="plan">
+            <h3 class="plan-name">Familie</h3>
+            <p class="plan-desc">Für bis zu 6 Personen</p>
+            <p class="price">6&nbsp;€<span class="per"> / Monat</span></p>
+            <ul class="plan-features">
+              <li>Alles aus Plus</li>
+              <li>6 Familienprofile</li>
+              <li>Gemeinsame Übersicht</li>
+            </ul>
+            <a class="btn btn-ghost" href="#contact">Familie starten</a>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- Kontakt -->
+    <section class="section" id="contact">
+      <div class="container">
+        <h2 class="section-title">Kontakt</h2>
+        <p class="section-sub">Fragen, Feedback oder Wünsche? Schreib uns eine Nachricht.</p>
+        <div class="form-card">
+          <form id="contact-form" novalidate>
+            <div class="field">
+              <label for="name">Name</label>
+              <input type="text" id="name" name="name" autocomplete="name" placeholder="Dein Name">
+              <p class="field-error" id="name-error" aria-live="polite" hidden></p>
+            </div>
+            <div class="field">
+              <label for="email">E-Mail</label>
+              <input type="email" id="email" name="email" autocomplete="email" placeholder="du@beispiel.de">
+              <p class="field-error" id="email-error" aria-live="polite" hidden></p>
+            </div>
+            <div class="field">
+              <label for="message">Nachricht</label>
+              <textarea id="message" name="message" rows="4" placeholder="Wie können wir helfen?"></textarea>
+              <p class="field-error" id="message-error" aria-live="polite" hidden></p>
+            </div>
+            <button type="submit" class="btn btn-primary btn-block">Absenden</button>
+          </form>
+          <div class="form-thanks" id="form-thanks" role="status" tabindex="-1" hidden>
+            <h3 id="thanks-title">Vielen Dank!</h3>
+            <p>Deine Nachricht ist angekommen – wir melden uns so schnell wie möglich bei dir.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container footer-inner">
+      <p>© 2026 Nachtfalter</p>
+    </div>
+  </footer>
+
+  <script src="script.js"></script>
+</body>
+</html>

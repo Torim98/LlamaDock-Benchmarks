@@ -1,206 +1,509 @@
-// LlamaDock-Benchmark-Website: statisch, liest nur data/index.json und data/runs/<id>/run.json
-// (erzeugt von scripts/export-site.mjs). Hash-Routen: #/ · #/model/<id> · #/run/<id> · #/about
+// LlamaDock-Benchmark-Website: statisch, liest data/index.json und data/runs/<id>/run.json
+// (erzeugt von scripts/export-site.mjs). Seiten (per <body data-page>):
+//   board   Startseite: Leaderboard, Szenario-Matrix, Modelle
+//   model   models/<slug>/: ein Modell mit allen Konfigurationen und Läufen (data-model = slug)
+//   method  methode/: Ablauf, Score-Formel, Szenarien
+// Alle Links sind relativ zu <base> (Wurzel der Seite); Anker daher immer mit Pfad.
 const app = document.getElementById('app');
+const PAGE = document.body.dataset.page || 'board';
 let DATA = null;
 
 const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
 const fmtS = (ms) => (ms == null ? '–' : ms >= 60000 ? `${Math.floor(ms / 60000)}:${String(Math.round((ms % 60000) / 1000)).padStart(2, '0')} min` : `${(ms / 1000).toFixed(1)} s`);
-const num = (n) => (n == null ? '–' : Number(n).toLocaleString('de-DE'));
+const num = (n, d = 0) => (n == null || Number.isNaN(n) ? '–' : Number(n).toLocaleString('de-DE', { maximumFractionDigits: d }));
 const date = (d) => (d ? new Date(d).toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric' }) : '–');
-const score = (s) =>
-  s ? `${s.checksPassed}/${s.checksTotal} Checks${s.manual != null ? ` · <span class="star">★ ${s.manual}</span>` : ''}` : '–';
+const dateTime = (d) => (d ? new Date(d).toLocaleString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : '–');
+const ctxK = (n) => (n ? `${Math.round(n / 1024)}k` : null);
+const bytes = (n) => (n == null ? '' : n >= 1e9 ? `${(n / 1e9).toFixed(1)} GB` : n >= 1e6 ? `${(n / 1e6).toFixed(1)} MB` : n >= 1e3 ? `${(n / 1e3).toFixed(1)} kB` : `${n} B`);
+const modelUrl = (slug, anchor = '') => `models/${encodeURIComponent(slug)}/${anchor ? `#${anchor}` : ''}`;
+const runUrl = (r) => modelUrl(r.modelSlug, `run-${r.id}`);
+const stars = (v) => (v == null ? '–' : `★ ${num(v, 2)}`);
+const STATE = { done: 'fertig', timeout: 'Zeitlimit', error: 'Fehler', cancelled: 'abgebrochen' };
+
+/** Farbstufe eines Scores 0–100. */
+const tone = (v) => (v == null ? 'none' : v >= 80 ? 'good' : v >= 55 ? 'mid' : 'low');
+const meter = (v, big = false) =>
+  v == null
+    ? '<span class="muted">–</span>'
+    : `<span class="meter${big ? ' big' : ''}" title="${num(v, 1)} von 100"><b class="t-${tone(v)}">${num(v, big ? 1 : 0)}</b><i><span class="bg-${tone(v)}" style="width:${Math.max(2, Math.min(100, v))}%"></span></i></span>`;
+const chip = (t, cls = '') => (t ? `<span class="chip ${cls}">${esc(t)}</span>` : '');
+const checksText = (s) => (s?.checksTotal ? `${s.checksPassed}/${s.checksTotal}` : '–');
 
 async function load() {
   const r = await fetch('data/index.json', { cache: 'no-store' });
-  if (!r.ok) throw new Error('Keine Daten (erst exportieren: node scripts/export-site.mjs)');
+  if (!r.ok) throw new Error('Noch keine Daten veröffentlicht.');
   DATA = await r.json();
-  document.getElementById('generated').textContent = new Date(DATA.generatedAt).toLocaleString('de-DE');
+  document.getElementById('generated').textContent = DATA.generatedAt ? dateTime(DATA.generatedAt) : '–';
 }
 
-/** Bester Lauf je Szenario × Profil (Checks, dann manuelle Note). */
-function best(runs) {
-  return [...runs].sort((a, b) => (b.score?.auto ?? 0) - (a.score?.auto ?? 0) || (b.score?.manual ?? 0) - (a.score?.manual ?? 0))[0];
+/** Kurzbeschreibung einer Konfiguration als Chips. */
+function configChips(c) {
+  const s = c.profile?.server ?? {};
+  return [
+    chip(ctxK(s.ctx) && `${ctxK(s.ctx)} Kontext`),
+    chip(s.kvCache && `KV ${s.kvCache}`),
+    chip(c.thinking && `Thinking ${c.thinking}`),
+    chip(c.profile?.provider === 'router' ? `Router · ${c.profile.router?.profiles?.length ?? 0} Profile` : c.profile?.provider === 'ninfer' ? 'NInfer' : `llama.cpp${s.build ? ` ${s.build}` : ''}`),
+    c.systemPrompt ? chip(`Prompt ${c.systemPrompt.name}`) : '',
+  ].join('');
 }
 
-function overview() {
+function componentsHead() {
+  return DATA.components.map((k) => `<th class="num" title="Gewicht ${DATA.weights[k.id]}">${esc(k.label)}</th>`).join('');
+}
+
+function noData(msg) {
+  app.innerHTML = `<section class="hero"><h1>Lokale Modelle im Agent-Test</h1><p class="lead">${esc(msg)}</p></section>`;
+}
+
+/* ------------------------------------------------------------ Leaderboard */
+
+function board() {
+  const cfgs = DATA.configs ?? [];
+  if (!cfgs.length) return noData('Noch keine veröffentlichten Läufe.');
+  const gpu = DATA.runs[0]?.hardware?.gpu;
   const scen = Object.values(DATA.scenarios);
-  const models = Object.values(DATA.models);
-  if (!DATA.runs.length) {
-    app.innerHTML = '<h1>Benchmarks</h1><p class="muted">Noch keine veröffentlichten Läufe.</p>';
-    return;
-  }
-  const gpu = DATA.runs[0]?.hardware?.gpu ?? '';
-  const rows = scen
-    .map((s) => {
-      const cells = models
-        .map((m) => {
-          const list = DATA.runs.filter((r) => r.scenario.id === s.id && r.profile.id === m.id);
-          const b = best(list);
-          return `<td>${b ? `<a href="#/run/${esc(b.id)}">${score(b.score)}</a><div class="muted small">${fmtS(b.timing?.agentMs)} · ${b.tps?.decode ?? '–'} t/s · ${list.length}×</div>` : '<span class="muted">–</span>'}</td>`;
-        })
-        .join('');
-      return `<tr><td><b>${esc(s.name)}</b><div class="muted small">${esc(s.description ?? '')}</div></td>${cells}</tr>`;
-    })
+  const runsById = new Map(DATA.runs.map((r) => [r.id, r]));
+  const podium = cfgs.slice(0, 3);
+
+  const rows = cfgs
+    .map(
+      (c) => `<tr>
+        <td class="rank r${c.rank}">${c.rank}</td>
+        <td class="who">
+          <a href="${modelUrl(c.modelSlug, `config-${c.configId}`)}"><b>${esc(DATA.models[c.modelSlug]?.name ?? c.model)}</b></a>
+          <div class="muted small mono">${esc(c.model)}</div>
+          <div class="chips">${configChips(c)}</div>
+        </td>
+        <td>${meter(c.score, true)}</td>
+        ${DATA.components.map((k) => `<td class="num">${meter(c.parts[k.id])}</td>`).join('')}
+        <td class="num">${num(c.tps, 1)}</td>
+        <td class="num">${fmtS(c.agentMs)}</td>
+        <td class="num">${c.scenarios.length}/${scen.length}${c.rated < c.runs.length ? `<div class="muted small" title="Läufe ohne manuelle Bewertung">${c.runs.length - c.rated} unbewertet</div>` : ''}</td>
+      </tr>`,
+    )
     .join('');
+
+  const matrix = `<div class="panel table-wrap"><table class="matrix">
+      <thead><tr><th>Konfiguration</th>${scen.map((s) => `<th>${esc(s.name)}</th>`).join('')}</tr></thead>
+      <tbody>${cfgs
+        .map(
+          (c) => `<tr><td><a href="${modelUrl(c.modelSlug, `config-${c.configId}`)}">${esc(c.label)}</a><div class="muted small">${esc(c.thinking ? `Thinking ${c.thinking}` : '')}</div></td>${scen
+            .map((s) => {
+              const sc = c.scenarios.find((x) => x.id === s.id);
+              if (!sc) return '<td class="muted">–</td>';
+              const rs = sc.runs.map((id) => runsById.get(id)).filter(Boolean);
+              const r = rs[0];
+              const score = rs.length ? rs.reduce((a, x) => a + (x.points?.score ?? 0), 0) / rs.length : null;
+              return `<td><a class="cell" href="${runUrl(r)}">${meter(score)}<span class="muted small">${checksText(r.score)} Checks · ${fmtS(r.timing?.agentMs)}${rs.length > 1 ? ` · ${rs.length}×` : ''}</span></a></td>`;
+            })
+            .join('')}</tr>`,
+        )
+        .join('')}</tbody></table></div>`;
+
+  const models = Object.values(DATA.models).sort((a, b) => (b.best ?? -1) - (a.best ?? -1));
   app.innerHTML = `
-    <h1>Lokale Modelle im Agent-Test</h1>
-    <p class="muted">Echte Aufgaben für einen Coding-Agent (pi) mit lokalen Modellen${gpu ? ` auf einer <b>${esc(gpu)}</b>` : ''}. Jeder Lauf mit vollständiger Konfiguration, automatischen Browser-Checks und manueller Bewertung (1–5).</p>
-    <h2>Vergleich</h2>
-    <div class="panel table-wrap"><table>
-      <thead><tr><th>Szenario</th>${models.map((m) => `<th><a href="#/model/${esc(m.id)}">${esc(m.name)}</a></th>`).join('')}</tr></thead>
+    <section class="hero">
+      <h1>Lokale Modelle im Agent-Test</h1>
+      <p class="lead">Echte Aufgaben für einen Coding-Agent (pi) mit lokalen Modellen${gpu ? ` auf einer <b>${esc(gpu)}</b>` : ''}. Jeder Lauf mit exakter Konfiguration, automatischen Browser-Checks, manueller Bewertung und den erzeugten Artefakten.</p>
+      <div class="kpis">
+        <div><b>${models.length}</b><span>Modelle</span></div>
+        <div><b>${cfgs.length}</b><span>Konfigurationen</span></div>
+        <div><b>${DATA.runs.length}</b><span>Läufe</span></div>
+        <div><b>${scen.length}</b><span>Szenarien</span></div>
+      </div>
+    </section>
+
+    <section class="podium">${podium
+      .map(
+        (c) => `<a class="panel pod p${c.rank}" href="${modelUrl(c.modelSlug, `config-${c.configId}`)}">
+          <span class="place">${['🥇', '🥈', '🥉'][c.rank - 1]}</span>
+          <b>${esc(DATA.models[c.modelSlug]?.name ?? c.model)}</b>
+          <span class="muted small">${esc(c.label)}</span>
+          <span class="pod-score t-${tone(c.score)}">${num(c.score, 1)}</span>
+        </a>`,
+      )
+      .join('')}</section>
+
+    ${categoryRankings()}
+
+    <h2 id="leaderboard">Leaderboard</h2>
+    <p class="muted small">Score 0–100 aus manueller Bewertung, automatischen Checks, Tempo und externen Benchmarks (<a href="methode/#score">so wird gerechnet</a>). Eine Zeile = ein Modell mit exakt einer Konfiguration.</p>
+    <div class="panel table-wrap"><table class="board">
+      <thead><tr><th>#</th><th>Modell &amp; Konfiguration</th><th>Score</th>${componentsHead()}<th class="num">t/s</th><th class="num">Ø Dauer</th><th class="num">Szenarien</th></tr></thead>
       <tbody>${rows}</tbody>
     </table></div>
+
+    <h2>Szenarien × Konfigurationen</h2>
+    <p class="muted small">Lauf-Score ohne externe Benchmarks; ein Klick führt zum Lauf mit Artefakt, Screenshots und allen Details.</p>
+    ${matrix}
+
     <h2>Modelle</h2>
     <div class="grid">${models
       .map((m) => {
-        const runs = DATA.runs.filter((r) => r.profile.id === m.id);
-        const p = m.profile ?? {};
-        return `<a class="panel" href="#/model/${esc(m.id)}" style="color:inherit;text-decoration:none">
-          <b>${esc(m.name)}</b>
-          <div class="muted small">${esc(p.model ?? '')}</div>
-          <div style="margin-top:8px">${[p.provider, p.server?.build, p.server?.ctx ? `${Math.round(p.server.ctx / 1024)}k Kontext` : null, p.server?.kvCache ? `KV ${p.server.kvCache}` : null]
-            .filter(Boolean)
-            .map((c) => `<span class="chip">${esc(c)}</span>`)
-            .join('')}</div>
-          <div class="muted small">${runs.length} Läufe</div>
+        const r = DATA.recipes[m.recipe];
+        const shot = DATA.runs.find((x) => x.modelSlug === m.slug && x.screenshot);
+        return `<a class="panel card" href="${modelUrl(m.slug)}">
+          ${shot ? `<img class="card-img" loading="lazy" src="data/runs/${esc(shot.id)}/screenshot.png" alt="" />` : ''}
+          <div class="card-head"><b>${esc(m.name)}</b>${meter(m.best)}</div>
+          <div class="muted small mono">${esc(m.file)}</div>
+          <div class="muted small">${m.configs.length} Konfiguration(en) · ${m.runs} Läufe${r?.license ? ` · ${esc(r.license)}` : ''}</div>
         </a>`;
       })
       .join('')}</div>`;
 }
 
-function modelPage(id) {
-  const m = DATA.models[id];
+const CATEGORY_EMPTY = {
+  coding: 'Noch kein Coding-Szenario gelaufen.',
+  writing: 'Noch kein Schreib-Szenario gelaufen (Kategorie „Writing“).',
+  image: 'Noch kein Bild-Szenario gelaufen (Kategorie „Image Gen“, Tool generate_image).',
+  routing: 'Noch kein Lauf mit dem Ziel „Laya Auto-Routing“.',
+};
+
+/** Rankings nach Anwendungsfall: je Kategorie die besten Konfigurationen. */
+function categoryRankings() {
+  const cats = DATA.categories ?? [];
+  if (!cats.length) return '';
+  const byId = new Map(DATA.configs.map((c) => [c.configId, c]));
+  const entry = (cat, e, i) => {
+    const c = byId.get(e.configId);
+    const basis =
+      cat.id === 'speed' ? 'Decode-t/s + Dauer' : e.scenarios ? `${e.scenarios} Szenario${e.scenarios > 1 ? 'en' : ''}${e.external ? ' + extern' : ''}` : 'nur externe Benchmarks';
+    return `<li>
+      <span class="pos">${i + 1}</span>
+      <a href="${modelUrl(c.modelSlug, `config-${c.configId}`)}" title="${esc(c.label)}">
+        <b>${esc(DATA.models[c.modelSlug]?.name ?? c.model)}</b>
+        <span class="muted small">${c.thinking ? `Thinking ${esc(c.thinking)} · ` : ''}${esc(basis)}</span>
+      </a>
+      ${meter(e.score)}
+    </li>`;
+  };
+  return `<h2 id="anwendungsfaelle">Rankings nach Anwendungsfall</h2>
+    <p class="muted small">Wer ist wofür am besten? Je Kategorie zählen nur passende Szenarien und externe Benchmarks (<a href="methode/#kategorien">so wird gerechnet</a>).</p>
+    <div class="cats">${cats
+      .map(
+        (cat) => `<section class="panel cat" id="cat-${esc(cat.id)}">
+          <h3><span class="cat-icon">${cat.icon}</span>${esc(cat.label)}</h3>
+          ${
+            cat.ranking.length
+              ? `<ol>${cat.ranking.slice(0, 5).map((e, i) => entry(cat, e, i)).join('')}</ol>`
+              : `<p class="muted small">${esc(CATEGORY_EMPTY[cat.id] ?? 'Noch keine Daten.')}</p>`
+          }
+        </section>`,
+      )
+      .join('')}</div>`;
+}
+
+/* ------------------------------------------------------------ Modellseite */
+
+/** Plätze einer Konfiguration in den Rankings nach Anwendungsfall. */
+function categoryPlaces(c) {
+  const items = (DATA.categories ?? [])
+    .map((cat) => {
+      const i = cat.ranking.findIndex((e) => e.configId === c.configId);
+      return i < 0 ? '' : `<a class="place-chip" href="./#cat-${esc(cat.id)}"><span>${cat.icon} ${esc(cat.label)}</span>${meter(cat.ranking[i].score)}<span class="muted small">Platz ${i + 1}/${cat.ranking.length}</span></a>`;
+    })
+    .filter(Boolean);
+  return items.length ? `<div class="places">${items.join('')}</div>` : '';
+}
+
+function paramRows(c) {
+  const p = c.profile ?? {};
+  if (p.provider === 'router') {
+    const r = p.router ?? {};
+    return [
+      ['Ziel', 'LlamaDock-Router, Modell <span class="mono">llamadock/auto</span>'],
+      ['Profile für Auto', (r.profiles ?? []).map((x) => `<div>${esc(x.name)} <span class="muted small">(${esc(x.tier)}${x.domains?.length ? `, Bereich ${esc(x.domains.join(', '))}` : ''})</span></div>`).join('') || '–'],
+      ['Standardprofil', esc(r.defaultProfile ?? '–')],
+      ['Schwelle groß/klein', esc(r.difficultyThreshold ?? '–')],
+      ['Thinking', r.autoThinking ? `Laya wählt pro Aufgabe${r.thinkingThresholds ? ` <span class="muted">(Schwellen ${esc(r.thinkingThresholds.join(' / '))})</span>` : ''}` : esc(c.thinking ?? '–')],
+      ['System Prompt', c.systemPrompt ? esc(c.systemPrompt.name) : 'pi-Standard + Benchmark-Regeln'],
+      ['Tools', (c.tools ?? []).map((t) => chip(t)).join('')],
+    ];
+  }
+  const s = p.server ?? {};
+  const sampling = Object.entries(p.sampling ?? {}).map(([k, v]) => `${k} ${v}`).join(' · ');
+  return [
+    ['Modelldatei', `<span class="mono">${esc(p.model ?? '–')}</span>`],
+    ['Vision (mmproj)', p.mmproj ? `<span class="mono">${esc(p.mmproj)}</span>` : 'nein'],
+    ['Provider', `${p.provider === 'ninfer' ? 'NInfer (Docker)' : 'llama.cpp'}${s.build ? ` · Build ${esc(s.build)}` : ''}`],
+    ['Kontext', s.ctx ? `${num(s.ctx)} Tokens${s.parallel > 1 ? ` (${s.parallel} Slots)` : ''}` : '–'],
+    ['KV-Cache', esc(s.kvCache ?? 'f16')],
+    ['GPU-Layer (ngl)', esc(s.ngl ?? '–')],
+    ['Flash Attention', s.flashAttention ? 'an' : 'aus'],
+    ['ubatch', esc(s.ub ?? '–')],
+    ['Jinja-Template', s.jinja === false ? 'aus' : 'an'],
+    ['MoE auf CPU', esc(s.cpuMoe ?? '–')],
+    ['Zusatz-Flags', (s.extraArgs ?? []).length ? `<span class="mono">${esc(s.extraArgs.join(' '))}</span>` : '–'],
+    p.ninfer ? ['NInfer', `<span class="mono">${esc(JSON.stringify(p.ninfer))}</span>`] : null,
+    ['Sampling', esc(sampling || 'Server-Standard')],
+    ['Thinking', `${esc(c.thinking ?? p.thinking ?? '–')}${p.reasoningEfforts ? ` <span class="muted">(Modell kennt ${esc(p.reasoningEfforts.join(', ') || 'nur an/aus')})</span>` : ''}`],
+    ['Max. Antwort-Tokens', num(p.maxTokens)],
+    ['System Prompt', c.systemPrompt ? `${esc(c.systemPrompt.name)} (${c.systemPrompt.mode === 'replace' ? 'ersetzt' : 'ergänzt'} pi's Prompt)` : 'pi-Standard + Benchmark-Regeln'],
+    ['Tools', (c.tools ?? []).map((t) => chip(t)).join('')],
+  ].filter(Boolean);
+}
+
+function envRows(c) {
+  const h = c.hardware ?? {};
+  return [
+    ['GPU', `${esc(h.gpu ?? '–')}${h.vramMB ? ` · ${num(h.vramMB / 1024, 0)} GB VRAM` : ''}`],
+    ['Treiber / CUDA', `${esc(h.driver ?? '–')} / ${esc(h.cuda ?? '–')}`],
+    ['CPU', `${esc(h.cpu ?? '–')}${h.threads ? ` · ${h.threads} Threads` : ''}`],
+    ['RAM', h.ramGB ? `${h.ramGB} GB` : '–'],
+    ['Betriebssystem', esc(h.os ?? '–')],
+    ['Modell-Server', `<span class="mono">${esc(c.provider?.version ?? '–')}</span>`],
+    ['Harness', `pi <span class="mono">${esc(c.harness?.version ?? '')}</span>`],
+  ];
+}
+
+const dl = (rows) => `<dl class="kv">${rows.map(([k, v]) => `<dt>${esc(k)}</dt><dd>${v}</dd>`).join('')}</dl>`;
+
+function runCard(r) {
+  const pts = r.points ?? {};
+  const rubric = r.scenario.rubric ?? DATA.scenarios[r.scenario.id]?.rubric ?? [];
+  const tools = Object.entries(r.toolCalls?.byName ?? {}).map(([k, v]) => chip(`${k} ${v}×`)).join('');
+  const entry = r.scenario.entry || 'index.html';
+  const hasEntry = (r.artifacts ?? []).some((a) => a.path === entry);
+  const base = `data/runs/${encodeURIComponent(r.id)}`;
+  const stats = [
+    ['Lauf-Score', meter(pts.score)],
+    ['Checks', `${checksText(r.score)}`],
+    ['Bewertung', `<span class="star">${stars(r.score?.manual)}</span>`],
+    ['Dauer Agent', fmtS(r.timing?.agentMs)],
+    ['Decode', r.tps?.decode ? `${num(r.tps.decode, 1)} t/s` : '–'],
+    ['effektiv', r.tps?.effective ? `${num(r.tps.effective, 1)} t/s` : '–'],
+    ['Tokens ↑ / ↓', `${num(r.tokens?.in)} / ${num(r.tokens?.out)}`],
+    ['aus Cache', num(r.tokens?.cacheRead)],
+    ['Runden', num(r.turns)],
+    ['Tool-Aufrufe', `${num(r.toolCalls?.total)}${r.toolErrors ? ` (${r.toolErrors} Fehler)` : ''}`],
+    ['Modell laden', fmtS(r.timing?.loadMs)],
+    ['Zeitlimit', r.timeLimitSec ? fmtS(r.timeLimitSec * 1000) : '–'],
+  ];
+  return `<article class="panel run" id="run-${esc(r.id)}">
+    <header class="run-head">
+      <div>
+        <h3>${esc(r.scenario.name)} ${chip(`v${r.scenario.version ?? 1}`)}</h3>
+        <div class="muted small">${dateTime(r.date)} · ${esc(STATE[r.state] ?? r.state)}${r.isolation?.breaches ? ` · <span class="warn">${r.isolation.breaches}× außerhalb des Arbeitsordners gesucht</span>` : ''}</div>
+      </div>
+      <div class="run-score">${meter(pts.score, true)}</div>
+    </header>
+    <div class="stats">${stats.map(([k, v]) => `<div class="stat"><span>${esc(k)}</span><b>${v}</b></div>`).join('')}</div>
+    <div class="parts small muted">Bewertung ${num(pts.manual)} · Checks ${num(pts.checks)} · Tempo ${num(pts.speed)} (t/s ${num(pts.tps)}, Dauer ${num(pts.time)})</div>
+    ${
+      r.screenshot || r.mobileScreenshot
+        ? `<div class="shots">${r.screenshot ? `<a href="${base}/screenshot.png"><img loading="lazy" src="${base}/screenshot.png" alt="Screenshot Desktop" /></a>` : ''}${r.mobileScreenshot ? `<a class="mobile" href="${base}/screenshot-mobile.png"><img loading="lazy" src="${base}/screenshot-mobile.png" alt="Screenshot Handy" /></a>` : ''}</div>`
+        : ''
+    }
+    ${
+      hasEntry
+        ? `<div class="actions"><button class="btn" data-preview="${esc(r.id)}" data-src="${base}/work/${esc(entry)}">▶ Live ansehen</button><a class="btn" href="${base}/work/${esc(entry)}" target="_blank" rel="noopener">In neuem Tab ↗</a></div><div class="preview-slot" id="pv-${esc(r.id)}"></div>`
+        : ''
+    }
+    <div class="cols">
+      <div>
+        <h4>Automatische Checks</h4>
+        <ul class="checks">${(r.checks ?? []).map((c) => `<li><span class="${c.ok ? 'ok' : 'no'}">${c.ok ? '✓' : '✗'}</span> ${esc(c.label)}${c.detail ? ` <span class="muted small">${esc(c.detail)}</span>` : ''}</li>`).join('') || '<li class="muted">–</li>'}</ul>
+      </div>
+      <div>
+        <h4>Manuelle Bewertung</h4>
+        ${
+          r.manual
+            ? `<table class="rubric"><tbody>${rubric
+                .map((x) => `<tr><th title="${esc(x.hint ?? '')}">${esc(x.label)}</th><td class="star">${r.manual.ratings?.[x.id] ? '★'.repeat(r.manual.ratings[x.id]) + '<span class="dim">' + '★'.repeat(5 - r.manual.ratings[x.id]) + '</span>' : '–'}</td></tr>`)
+                .join('')}</tbody></table>${r.manual.notes ? `<p class="notes">${esc(r.manual.notes)}</p>` : ''}`
+            : '<p class="muted small">Noch nicht bewertet.</p>'
+        }
+      </div>
+    </div>
+    ${tools ? `<div class="chips">${tools}</div>` : ''}
+    <details><summary>Aufgabe</summary><pre>${esc(r.prompt ?? DATA.scenarios[r.scenario.id]?.prompt ?? '')}</pre></details>
+    ${r.final ? `<details><summary>Letzte Antwort des Agents</summary><pre>${esc(r.final)}</pre></details>` : ''}
+    ${(r.errors ?? []).length ? `<details><summary>Fehler (${r.errors.length})</summary><pre>${esc(r.errors.join('\n'))}</pre></details>` : ''}
+    ${(r.console ?? []).length ? `<details><summary>Browser-Konsole (${r.console.length})</summary><pre>${esc(r.console.map((c) => `[${c.type ?? c.level ?? 'log'}] ${c.text ?? c}`).join('\n'))}</pre></details>` : ''}
+    ${r.systemPrompt?.text ? `<details><summary>System Prompt „${esc(r.systemPrompt.name)}“</summary><pre>${esc(r.systemPrompt.text)}</pre></details>` : ''}
+    <details><summary>Dateien (${(r.artifacts ?? []).length})</summary><ul class="files">${(r.artifacts ?? []).map((a) => `<li><a href="${base}/work/${esc(a.path)}">${esc(a.path)}</a> <span class="muted">${bytes(a.size)}</span></li>`).join('')}</ul></details>
+  </article>`;
+}
+
+async function modelPage(slug) {
+  const m = DATA.models[slug];
   if (!m) return notFound();
-  const p = m.profile ?? {};
   const recipe = DATA.recipes[m.recipe] ?? null;
   const ext = DATA.external[m.recipe] ?? [];
-  const runs = DATA.runs.filter((r) => r.profile.id === id);
-  const conf = [
-    ['Modelldatei', p.model],
-    ['Vision (mmproj)', p.mmproj ?? 'nein'],
-    ['Provider', `${p.provider ?? '–'}${p.server?.build ? ` (Build ${p.server.build})` : ''}`],
-    ['Kontext', p.server?.ctx ? `${num(p.server.ctx)} Tokens` : '–'],
-    ['KV-Cache', p.server?.kvCache],
-    ['GPU-Layer', p.server?.ngl],
-    ['Flash Attention', p.server?.flashAttention ? 'an' : 'aus'],
-    ['Thinking', p.thinking],
-    ['Sampling', Object.entries(p.sampling ?? {}).map(([k, v]) => `${k} ${v}`).join(', ') || 'Server-Standard'],
-    ['Zusatz-Flags', (p.server?.extraArgs ?? []).join(' ') || '–'],
-  ];
-  const first = runs[0] ? DATA.runs.find((r) => r.id === runs[0].id) : null;
+  const cfgs = DATA.configs.filter((c) => c.modelSlug === slug);
+  const ids = cfgs.flatMap((c) => c.runs);
+  const runs = new Map(
+    (await Promise.all(ids.map((id) => fetch(`data/runs/${encodeURIComponent(id)}/run.json`, { cache: 'no-store' }).then((r) => (r.ok ? r.json() : null)).catch(() => null)))).filter(Boolean).map((r) => [r.id, r]),
+  );
+  const quant = recipe?.quants?.find((q) => q.file && m.file && q.file.replace(/\.gguf$/i, '') === m.file);
+  const extVal = cfgs[0]?.external;
+
   app.innerHTML = `
-    <p><a href="#/">← Übersicht</a></p>
-    <h1>${esc(m.name)}</h1>
-    ${recipe ? `<p class="muted">${esc(recipe.name)} · <a href="https://huggingface.co/${esc(recipe.hfRepo)}">${esc(recipe.hfRepo)}</a> · Lizenz ${esc(recipe.license ?? '?')}</p>` : ''}
-    <h2>Konfiguration</h2>
-    <div class="panel table-wrap"><table><tbody>${conf.map(([k, v]) => `<tr><th>${esc(k)}</th><td>${esc(v ?? '–')}</td></tr>`).join('')}</tbody></table></div>
-    ${first ? `<p class="muted small">Hardware: ${esc(first.hardware?.gpu ?? '–')} · Harness: ${esc(first.harness?.id ?? 'pi')} ${esc(first.harness?.version ?? '')} · Provider-Version: ${esc(first.provider?.version ?? '–')}</p>` : ''}
-    <h2>Eigene Ergebnisse</h2>
-    <div class="grid">${runs
-      .map(
-        (r) => `<a class="panel" href="#/run/${esc(r.id)}" style="color:inherit;text-decoration:none">
-          <img class="card-img" loading="lazy" src="data/runs/${esc(r.id)}/screenshot.png" alt="" onerror="this.style.display='none'" />
-          <b>${esc(DATA.scenarios[r.scenario.id]?.name ?? r.scenario.id)}</b>
-          <div>${score(r.score)}</div>
-          <div class="muted small">${date(r.date)} · ${fmtS(r.timing?.agentMs)} · ${r.tps?.decode ?? '–'} t/s · ${num(r.tokens?.out)} Tokens</div>
-        </a>`,
-      )
-      .join('')}</div>
+    <p class="crumbs"><a href="./">← Leaderboard</a></p>
+    <section class="hero model-hero">
+      <div>
+        <h1>${esc(m.name)}</h1>
+        <p class="mono muted">${esc(m.file)}</p>
+        ${recipe?.description ? `<p class="lead">${esc(recipe.description)}</p>` : ''}
+        <div class="chips">
+          ${recipe?.hfRepo ? `<a class="chip link" href="https://huggingface.co/${esc(recipe.hfRepo)}">🤗 ${esc(recipe.hfRepo)}</a>` : ''}
+          ${chip(recipe?.license && `Lizenz ${recipe.license}`)}
+          ${chip(recipe?.paramsB && `${num(recipe.paramsB, 1)} Mrd. Parameter`)}
+          ${chip(quant?.size && `Datei ${bytes(quant.size)}`)}
+          ${chip(recipe?.baseModel && `Basis ${recipe.baseModel}`)}
+          ${recipe?.vision ? chip('Vision') : ''}${recipe?.toolCalling ? chip('Tool Calling') : ''}
+        </div>
+        ${recipe?.architecture ? `<p class="muted small">${esc(recipe.architecture)}</p>` : ''}
+      </div>
+      <div class="best">
+        <span class="muted small">bester Score</span>
+        ${meter(m.best, true)}
+        <span class="muted small">Platz ${m.bestRank ?? '–'} von ${DATA.configs.length}</span>
+      </div>
+    </section>
+
+    ${
+      cfgs.length > 1
+        ? `<nav class="toc">${cfgs.map((c) => `<a href="${modelUrl(slug, `config-${c.configId}`)}">#${c.rank} ${esc(c.label)}${c.thinking ? ` · ${esc(c.thinking)}` : ''}</a>`).join('')}</nav>`
+        : ''
+    }
+
+    ${cfgs
+      .map((c) => {
+        const list = c.runs.map((id) => runs.get(id)).filter(Boolean);
+        return `<section class="config" id="config-${esc(c.configId)}">
+          <div class="config-head">
+            <div>
+              <h2>${esc(c.label)}</h2>
+              <div class="chips">${configChips(c)}${chip(`Konfiguration ${c.configId}`, 'mono')}</div>
+            </div>
+            <div class="rankbox"><span class="muted small">Platz</span><b>${c.rank}</b></div>
+          </div>
+          <div class="panel scorecard">
+            <div class="total">${meter(c.score, true)}<span class="muted small">Gesamt-Score</span></div>
+            <div class="parts-grid">${DATA.components
+              .map((k) => `<div><span class="muted small">${esc(k.label)} <span class="dim">· Gewicht ${DATA.weights[k.id]}</span></span>${meter(c.parts[k.id])}</div>`)
+              .join('')}</div>
+          </div>
+          ${categoryPlaces(c)}
+          <div class="two">
+            <div class="panel"><h3>Exakte Parameter</h3>${dl(paramRows(c))}</div>
+            <div class="panel"><h3>Hardware &amp; Software</h3>${dl(envRows(c))}<p class="muted small">Zuletzt gelaufen: ${dateTime(c.lastRun)}</p></div>
+          </div>
+          <h3 class="runs-title">Läufe (${list.length})</h3>
+          ${list.map(runCard).join('')}
+        </section>`;
+      })
+      .join('')}
+
     <h2>Externe Benchmarks</h2>
     ${
       ext.length
-        ? `<div class="panel table-wrap"><table><thead><tr><th>Benchmark</th><th>Wert</th><th>Quelle</th><th>Stand</th></tr></thead><tbody>${ext
+        ? `<div class="panel table-wrap"><table><thead><tr><th>Benchmark</th><th class="num">Wert</th><th>Quelle</th><th>Stand</th></tr></thead><tbody>${ext
             .map(
-              (e) => `<tr><td>${esc(e.benchmark)}${e.note ? `<div class="muted small">${esc(e.note)}</div>` : ''}</td><td>${e.value == null ? '–' : esc(e.value)}</td><td><a href="${esc(e.source)}">${esc(new URL(e.source).hostname)}</a></td><td>${date(e.date)}</td></tr>`,
+              (e) =>
+                `<tr><td>${esc(e.benchmark)}${e.note ? `<div class="muted small">${esc(e.note)}</div>` : ''}</td><td class="num">${e.value == null ? '–' : num(e.value, 2)}</td><td><a href="${esc(e.source)}">${esc(safeHost(e.source))}</a></td><td>${date(e.date)}</td></tr>`,
             )
             .join('')}</tbody></table></div>`
         : '<p class="muted">Keine externen Werte hinterlegt.</p>'
-    }`;
-}
-
-async function runPage(id) {
-  const r = await (await fetch(`data/runs/${encodeURIComponent(id)}/run.json`, { cache: 'no-store' })).json().catch(() => null);
-  if (!r) return notFound();
-  const sc = DATA.scenarios[r.scenario.id] ?? { name: r.scenario.id, rubric: [] };
-  const entry = 'index.html';
-  const hasEntry = (r.artifacts ?? []).some((a) => a.path === entry);
-  const tools = Object.entries(r.toolCalls?.byName ?? {}).map(([k, v]) => `<span class="chip">${esc(k)} ${v}×</span>`).join('');
-  app.innerHTML = `
-    <p><a href="#/model/${esc(r.profile.id)}">← ${esc(r.profile.name)}</a></p>
-    <h1>${esc(sc.name)}</h1>
-    <p class="muted">${esc(r.profile.name)} · ${date(r.date)} · ${esc(r.state)}</p>
-    <div class="stats">
-      ${[
-        ['Checks', r.score ? `${r.score.checksPassed}/${r.score.checksTotal}` : '–'],
-        ['Bewertung', r.score?.manual != null ? `★ ${r.score.manual}` : '–'],
-        ['Dauer Agent', fmtS(r.timing?.agentMs)],
-        ['Decode', r.tps?.decode ? `${r.tps.decode} t/s` : '–'],
-        ['Tokens ↑ / ↓', `${num(r.tokens?.in)} / ${num(r.tokens?.out)}`],
-        ['Runden', r.turns ?? '–'],
-        ['Tool-Aufrufe', r.toolCalls?.total ?? '–'],
-        ['Modell laden', fmtS(r.timing?.loadMs)],
-      ]
-        .map(([k, v]) => `<div class="stat"><span>${esc(k)}</span><b>${esc(v)}</b></div>`)
-        .join('')}
-    </div>
-    <p>${tools}</p>
-    ${hasEntry ? `<h2>Ergebnis (live)</h2><iframe class="preview" sandbox="allow-scripts allow-forms" src="data/runs/${esc(r.id)}/work/${entry}"></iframe>` : ''}
-    ${r.screenshot ? `<h2>Screenshot</h2><img class="shot" loading="lazy" src="data/runs/${esc(r.id)}/screenshot.png" alt="Screenshot" />` : ''}
-    <h2>Automatische Checks</h2>
-    <ul class="checks">${(r.checks ?? []).map((c) => `<li><span class="${c.ok ? 'ok' : 'no'}">${c.ok ? '✓' : '✗'}</span> ${esc(c.label)} ${c.detail ? `<span class="muted small">${esc(c.detail)}</span>` : ''}</li>`).join('')}</ul>
-    ${
-      r.manual
-        ? `<h2>Manuelle Bewertung</h2><div class="panel table-wrap"><table><tbody>${(sc.rubric ?? [])
-            .map((x) => `<tr><th>${esc(x.label)}</th><td>${r.manual.ratings?.[x.id] ?? '–'} / 5</td><td class="muted small">${esc(x.hint ?? '')}</td></tr>`)
-            .join('')}</tbody></table>${r.manual.notes ? `<p>${esc(r.manual.notes)}</p>` : ''}</div>`
-        : ''
     }
-    <h2>Aufgabe</h2><pre>${esc(sc.prompt)}</pre>
-    ${r.final ? `<h3>Antwort des Agents</h3><pre>${esc(r.final)}</pre>` : ''}
-    <h2>Kontext</h2>
-    <pre>${esc(JSON.stringify({ profile: r.profile, systemPrompt: r.systemPrompt, thinking: r.thinking, tools: r.tools, hardware: r.hardware, provider: r.provider, harness: r.harness }, null, 2))}</pre>
-    <h3>Dateien</h3>
-    <ul class="small">${(r.artifacts ?? []).map((a) => `<li><a href="data/runs/${esc(r.id)}/work/${esc(a.path)}">${esc(a.path)}</a> <span class="muted">${num(a.size)} B</span></li>`).join('')}</ul>`;
+    ${extVal ? `<p class="muted small">Extern-Score ${num(extVal.value, 1)} = Mittel aus ${extVal.n} Werten${extVal.inherited ? ` des Basismodells (${esc(DATA.recipes[extVal.from]?.name ?? extVal.from)})` : ''}.</p>` : ''}`;
+
+  // Sprung zu #config-… / #run-… nach dem Rendern
+  if (location.hash) document.getElementById(decodeURIComponent(location.hash.slice(1)))?.scrollIntoView();
+  app.addEventListener('click', (e) => {
+    const b = e.target.closest('[data-preview]');
+    if (!b) return;
+    const slot = document.getElementById(`pv-${b.dataset.preview}`);
+    if (slot.firstChild) {
+      slot.innerHTML = '';
+      b.textContent = '▶ Live ansehen';
+    } else {
+      slot.innerHTML = `<iframe class="preview" sandbox="allow-scripts allow-forms" src="${esc(b.dataset.src)}" title="Artefakt"></iframe>`;
+      b.textContent = '■ Vorschau schließen';
+    }
+  });
 }
 
-function about() {
+function safeHost(u) {
+  try {
+    return new URL(u).hostname;
+  } catch {
+    return u;
+  }
+}
+
+/* ------------------------------------------------------------ Methode */
+
+function method() {
+  const w = DATA.weights;
+  const total = Object.values(w).reduce((a, b) => a + b, 0);
   app.innerHTML = `
-    <h1>Methode</h1>
-    <div class="panel">
-      <p>Jeder Lauf startet den Agent <b>pi</b> im Druckmodus (<code>pi -p --mode json --no-session</code>) in einem leeren Ordner, ohne Erweiterungen, Skills oder Kontextdateien, nur mit den Tools des Szenarios (read, bash, edit, write) und einem Zeitlimit.
-      Das Modell läuft lokal (llama.cpp bzw. NInfer) mit genau der angegebenen Konfiguration.</p>
-      <p>Danach öffnet ein Headless-Browser (Chrome DevTools Protocol) das Ergebnis: Konsolenfehler, Elemente, Formularverhalten, Handy-Breite, echte Tastendrücke bei Spielen, Screenshot. Die Checks sind je Szenario festgelegt. Die Rubrik (1–5) wird von Hand vergeben.</p>
-      <p>Externe Benchmarkwerte stammen aus den Model Cards und sind mit Quelle und Abrufdatum angegeben.</p>
+    <section class="hero"><h1>Methode</h1><p class="lead">Wie ein Lauf abläuft, was gemessen wird und wie der Score entsteht.</p></section>
+    <div class="panel prose">
+      <h2>Ablauf eines Laufs</h2>
+      <p>LlamaDock lädt das Profil (Modell + Parameter) und startet den Agent <b>pi</b> im Druckmodus (<code>pi -p --mode json --no-session</code>) in einem leeren, isolierten Ordner: ohne Erweiterungen, Skills oder Kontextdateien, nur mit den Tools des Szenarios und einem Zeitlimit. Der System Prompt verbietet, außerhalb des Ordners zu suchen; Versuche werden am Lauf vermerkt.</p>
+      <p>Danach öffnet ein Headless-Browser (Chrome DevTools Protocol) das Ergebnis: Konsolenfehler, Elemente, Formularverhalten, Handy-Breite, echte Tastendrücke bei Spielen, Screenshots. Die Checks sind je Szenario festgelegt. Die Rubrik (1–5 Sterne je Punkt) wird von Hand vergeben.</p>
+      <p>Gemessen werden Dauer, Tokens (Prompt, Antwort, Cache), Decode-Geschwindigkeit (Median der Server-Messungen), effektive Geschwindigkeit (Antwort-Tokens pro Sekunde Modellzeit), Runden und Tool-Aufrufe. Jeder Lauf speichert die exakte Konfiguration, Hardware sowie Modell-Server- und Harness-Version.</p>
+      <p><b>Eine Konfiguration</b> ist ein Modell mit exakt denselben Parametern (Server-Flags, Sampling, Thinking-Stufe, System Prompt, Tools). Läuft dasselbe Szenario mit derselben Konfiguration erneut, ersetzt der neue Lauf den alten.</p>
+
+      <h2 id="score">Score</h2>
+      <p>Jeder Teil liegt zwischen 0 und 100. Der Score ist ihr gewichteter Mittelwert; fehlt ein Teil (z. B. noch keine Bewertung), zählen die übrigen entsprechend stärker.</p>
+      <table class="weights"><thead><tr><th>Teil</th><th class="num">Gewicht</th><th>Berechnung</th></tr></thead><tbody>
+        <tr><td>Bewertung</td><td class="num">${w.manual} / ${total}</td><td>Mittel der Rubrik-Sterne, 1 ★ = 0, 5 ★ = 100</td></tr>
+        <tr><td>Checks</td><td class="num">${w.checks} / ${total}</td><td>Anteil bestandener automatischer Checks</td></tr>
+        <tr><td>Tempo</td><td class="num">${w.speed} / ${total}</td><td>Je zur Hälfte: Decode-t/s im Verhältnis zum schnellsten Lauf überhaupt, Dauer im Verhältnis zum schnellsten fertigen Lauf im selben Szenario (Zeitlimit überschritten = 0)</td></tr>
+        <tr><td>Extern</td><td class="num">${w.external} / ${total}</td><td>Mittel der veröffentlichten Benchmarkwerte des Modells (Model Card, mit Quelle). Grober Anhaltspunkt: Nicht jedes Modell ist auf denselben Benchmarks gemessen.</td></tr>
+      </tbody></table>
+      <p>Der Score einer Konfiguration mittelt zuerst über Wiederholungen eines Szenarios, dann über die Szenarien. Der <b>Lauf-Score</b> in den Tabellen enthält den externen Teil nicht. Tempo ist relativ: Kommt ein schnelleres Modell dazu, sinkt der Tempo-Wert der anderen.</p>
+
+      <h2 id="kategorien">Rankings nach Anwendungsfall</h2>
+      <p>Jedes Szenario trägt eine oder mehrere Kategorien, externe Benchmarks werden nach Namen zugeordnet (z. B. LiveCodeBench und SWE-bench → Coding, GPQA, HLE und MMLU → Intelligence, IFEval → Writing). Innerhalb einer Kategorie zählen Bewertung, Checks und externe Werte mit denselben Gewichten wie oben, Tempo nicht.</p>
+      <table class="weights"><thead><tr><th>Kategorie</th><th>Grundlage</th></tr></thead><tbody>
+        <tr><td>🧠 Overall Intelligence</td><td>alle Szenarien + externe Wissens- und Reasoning-Benchmarks</td></tr>
+        <tr><td>💻 Coding</td><td>Coding-Szenarien + externe Coding-Benchmarks</td></tr>
+        <tr><td>⚡ Speed</td><td>nur Tempo: Decode-t/s und Dauer</td></tr>
+        <tr><td>✍️ Writing &amp; Scientific Writing</td><td>Schreib-Szenarien (Artikel, wissenschaftlicher Text) + Instruction-Following-Benchmarks</td></tr>
+        <tr><td>🎨 Image Gen</td><td>Szenarien, in denen der Agent über das Tool <code>generate_image</code> Bilder erzeugt (Prompt-Umsetzung, Bildqualität, Schrift im Bild)</td></tr>
+        <tr><td>🧭 Routing (Laya)</td><td>Läufe über den LlamaDock-Router: Laya wählt pro Aufgabe Modell und Thinking-Stufe; bewertet wird das Ergebnis aller Szenarien</td></tr>
+      </tbody></table>
     </div>
+
     <h2>Szenarien</h2>
     ${Object.values(DATA.scenarios)
       .map(
-        (s) => `<div class="panel" style="margin-bottom:12px"><b>${esc(s.name)}</b> <span class="chip">v${esc(s.version ?? 1)}</span><p class="muted">${esc(s.description ?? '')}</p>
-        <h3>Checks</h3><ul class="small">${(s.checks ?? []).map((c) => `<li>${esc(c.label)}</li>`).join('')}</ul>
-        <h3>Rubrik</h3><ul class="small">${(s.rubric ?? []).map((c) => `<li><b>${esc(c.label)}</b>: ${esc(c.hint ?? '')}</li>`).join('')}</ul>
-        <details><summary>Prompt</summary><pre>${esc(s.prompt)}</pre></details></div>`,
+        (s) => `<div class="panel scenario"><div class="config-head"><h3>${esc(s.name)}</h3>${chip(`v${s.version ?? 1}`)}</div><p class="muted">${esc(s.description ?? '')}</p>
+        <div class="chips">${(s.categories ?? []).map((c) => chip((DATA.categories ?? []).find((x) => x.id === c)?.label ?? c, 'cat-chip')).join('')}${(s.tools ?? []).map((t) => chip(t)).join('')}${chip(s.timeLimitSec && `Zeitlimit ${fmtS(s.timeLimitSec * 1000)}`)}</div>
+        <div class="cols"><div><h4>Checks</h4><ul class="small">${(s.checks ?? []).map((c) => `<li>${esc(c.label)}</li>`).join('')}</ul></div>
+        <div><h4>Rubrik</h4><ul class="small">${(s.rubric ?? []).map((c) => `<li><b>${esc(c.label)}</b>: ${esc(c.hint ?? '')}</li>`).join('')}</ul></div></div>
+        <details><summary>Aufgabe</summary><pre>${esc(s.prompt)}</pre></details></div>`,
       )
       .join('')}`;
 }
 
 function notFound() {
-  app.innerHTML = '<h1>Nicht gefunden</h1><p><a href="#/">Zur Übersicht</a></p>';
+  app.innerHTML = '<h1>Nicht gefunden</h1><p><a href="./">Zum Leaderboard</a></p>';
 }
 
-async function route() {
+async function main() {
+  document.querySelector(`[data-nav="${PAGE}"]`)?.classList.add('active');
   try {
-    if (!DATA) await load();
+    await load();
   } catch (e) {
-    app.innerHTML = `<h1>Benchmarks</h1><p class="muted">${esc(e.message)}</p>`;
-    return;
+    return noData(e.message);
   }
-  const [, page, id] = (location.hash.replace(/^#/, '') || '/').split('/');
-  window.scrollTo(0, 0);
-  if (page === 'model') modelPage(decodeURIComponent(id));
-  else if (page === 'run') await runPage(decodeURIComponent(id));
-  else if (page === 'about') about();
-  else overview();
+  if (PAGE === 'model') await modelPage(document.body.dataset.model);
+  else if (PAGE === 'method') method();
+  else board();
+  // Alte Hash-Links (#/model/<id>, #/run/<id>) der ersten Version weiterleiten
+  const old = location.hash.match(/^#\/(model|run)\/(.+)$/);
+  if (old && PAGE === 'board') {
+    const run = DATA.runs.find((r) => r.id === decodeURIComponent(old[2]));
+    const cfg = DATA.configs.find((c) => c.profile?.id === decodeURIComponent(old[2]));
+    if (run) location.href = runUrl(run);
+    else if (cfg) location.href = modelUrl(cfg.modelSlug, `config-${cfg.configId}`);
+  }
 }
 
-window.addEventListener('hashchange', route);
-route();
+main();
