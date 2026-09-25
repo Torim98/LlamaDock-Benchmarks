@@ -60,7 +60,11 @@ function noData(msg) {
 
 function board() {
   const cfgs = DATA.configs ?? [];
-  if (!cfgs.length) return noData('Noch keine veröffentlichten Läufe.');
+  if (!cfgs.length) {
+    noData('Noch keine veröffentlichten Läufe.');
+    app.insertAdjacentHTML('beforeend', routingSection());
+    return;
+  }
   const gpu = DATA.runs[0]?.hardware?.gpu;
   const scen = Object.values(DATA.scenarios);
   const runsById = new Map(DATA.runs.map((r) => [r.id, r]));
@@ -127,6 +131,8 @@ function board() {
 
     ${categoryRankings()}
 
+    ${routingSection()}
+
     <h2 id="leaderboard">Leaderboard</h2>
     <p class="muted small">Score 0–100 aus manueller Bewertung, automatischen Checks, Tempo und externen Benchmarks (<a href="methode/#score">so wird gerechnet</a>). Eine Zeile = ein Modell mit exakt einer Konfiguration.</p>
     <div class="panel table-wrap"><table class="board">
@@ -157,8 +163,71 @@ const CATEGORY_EMPTY = {
   coding: 'Noch kein Coding-Szenario gelaufen.',
   writing: 'Noch kein Schreib-Szenario gelaufen (Kategorie „Writing“).',
   image: 'Noch kein Bild-Szenario gelaufen (Kategorie „Image Gen“, Tool generate_image).',
-  routing: 'Noch kein Lauf mit dem Ziel „Laya Auto-Routing“.',
+  routing: 'Noch kein Lauf mit dem Ziel „Auto-Routing“.',
+  computer: 'Noch kein Computer-Use-Szenario gelaufen und keine externen Werte (OSWorld, AndroidWorld, WebArena) für die getesteten Modelle.',
 };
+
+const pct = (v) => (v == null ? '–' : `${num(v * 100, 0)} %`);
+
+/** Routing: eigener Entscheider-Benchmark (Testset in LlamaDock) + JevBench v1.4.1 (extern). */
+function routingSection() {
+  const R = DATA.routing;
+  if (!R || (!R.own?.length && !R.external)) return '';
+  const ts = R.testset;
+  const n = ts ? ts.router.length + ts.guard.length + ts.support.length : null;
+  const own = (R.own ?? [])
+    .map(
+      (r, i) => `<tr>
+        <td class="rank r${i + 1}">${i + 1}</td>
+        <td class="who"><b>${esc(r.label)}</b><div class="muted small">${r.engine === 'jevk5' ? (r.translate ? 'mit Übersetzung DE→EN' : 'Deutsch direkt') : 'Deutsch → Englisch (MarianMT)'} · ${esc(r.hardware?.cpu ?? 'CPU')}</div></td>
+        <td>${meter(r.metrics.score, true)}</td>
+        <td class="num" title="AUC: trennt die Schwierigkeit leichte von schweren Aufgaben?">${pct(r.metrics.tier.auc)}</td>
+        <td class="num" title="Genauigkeit bei der Schwelle, die LlamaDock verwendet">${pct(r.metrics.tier.accuracyAtConfigured)}</td>
+        <td class="num">${pct(r.metrics.domain.accuracy)}</td>
+        <td class="num" title="AUC Prompt-Injection-Erkennung">${pct(r.metrics.guard.auc)}</td>
+        <td class="num" title="AUC: stützt der Beleg die Aussage?">${pct(r.metrics.support.auc)}</td>
+        <td class="num">${num(r.metrics.latency.routerMs)} ms</td>
+      </tr>`,
+    )
+    .join('');
+  const ext = R.external;
+  const shown = ext ? ext.systems.filter((x) => x.rank <= 12 || x.llamadock) : [];
+  const jev = shown
+    .map(
+      (x) => `<tr class="${x.llamadock ? 'hl' : ''}">
+        <td class="rank">${x.rank}</td>
+        <td class="who"><b>${esc(x.name)}</b>${x.llamadock ? ' <span class="chip">in LlamaDock</span>' : ''}<div class="muted small">${esc([x.org, x.base, x.license].filter(Boolean).join(' · '))}${x.api ? ' · API' : ''}</div></td>
+        <td>${meter(x.score)}</td>
+        <td class="num">${num(x.intelligence)}</td>
+        <td class="num">${num(x.calibration)}</td>
+        <td class="num">${num(x.speed)}</td>
+        <td class="num">${num(x.cost)}</td>
+        <td class="num">${esc(x.costPer1k)}</td>
+        <td>${x.url ? `<a href="${esc(x.url)}" rel="noopener">Quelle</a>` : ''}</td>
+      </tr>`,
+    )
+    .join('');
+  return `<h2 id="routing">🧭 Routing &amp; Entscheider</h2>
+    <p class="muted small">Der Router wählt pro Aufgabe Modell und Thinking-Stufe. Die Entscheidung trifft ein kleines Entscheidungsmodell (getypte Fragen, ein Forward-Pass). Standard ist seit dem 24.09.2026 <b>JevK5</b> statt Laya (<a href="methode/#routing">Methode</a>).</p>
+    ${
+      own
+        ? `<h3>LlamaDock-Routing-Test</h3>
+    <p class="muted small">${n ? `${n} Fragen (${ts.router.length} Aufgaben auf Deutsch und Englisch mit Schwierigkeit und Bereich, ${ts.guard.length} Texte mit/ohne Prompt Injection, ${ts.support.length} Beleg-Aussage-Paare)` : ''}, alle auf der CPU. Score = Mittel aus Klassen-AUC, Bereichs-Genauigkeit, Guard-AUC und Beleg-AUC.</p>
+    <div class="panel table-wrap"><table class="board">
+      <thead><tr><th>#</th><th>Entscheider</th><th>Score</th><th class="num">Klasse AUC</th><th class="num">Klasse ✓</th><th class="num">Bereich</th><th class="num">Guard</th><th class="num">Beleg</th><th class="num">Router-Entscheidung</th></tr></thead>
+      <tbody>${own}</tbody></table></div>`
+        : ''
+    }
+    ${
+      ext
+        ? `<h3>Extern: ${esc(ext.benchmark)}</h3>
+    <p class="muted small">Benchmark Heaven, bewertet am ${date(ext.scoredAt)}, abgerufen am ${date(ext.retrievedAt)}: ${ext.systems.length} Systeme, Score = harmonisches Mittel aus Intelligence, Calibration, Speed und Cost. Gezeigt: die Top 12 und die Systeme, die LlamaDock einbauen kann. <a href="${esc(ext.source)}" rel="noopener">Ganze Rangliste</a></p>
+    <div class="panel table-wrap"><table class="board">
+      <thead><tr><th>#</th><th>System</th><th>Score</th><th class="num">Intel.</th><th class="num">Calib.</th><th class="num">Speed</th><th class="num">Cost</th><th class="num">$/1000</th><th></th></tr></thead>
+      <tbody>${jev}</tbody></table></div>`
+        : ''
+    }`;
+}
 
 /** Rankings nach Anwendungsfall: je Kategorie die besten Konfigurationen. */
 function categoryRankings() {
@@ -187,7 +256,12 @@ function categoryRankings() {
           ${
             cat.ranking.length
               ? `<ol>${cat.ranking.slice(0, 5).map((e, i) => entry(cat, e, i)).join('')}</ol>`
-              : `<p class="muted small">${esc(CATEGORY_EMPTY[cat.id] ?? 'Noch keine Daten.')}</p>`
+              : cat.id === 'routing' && DATA.routing?.own?.length
+                ? `<ol>${DATA.routing.own
+                    .slice(0, 5)
+                    .map((r, i) => `<li><span class="pos">${i + 1}</span><a href="./#routing"><b>${esc(r.label)}</b><span class="muted small">Entscheider · ${r.engine === 'jevk5' ? (r.translate ? 'übersetzt' : 'Deutsch direkt') : 'übersetzt'}</span></a>${meter(r.metrics.score)}</li>`)
+                    .join('')}</ol>`
+                : `<p class="muted small">${esc(CATEGORY_EMPTY[cat.id] ?? 'Noch keine Daten.')}</p>`
           }
         </section>`,
       )
@@ -466,8 +540,15 @@ function method() {
         <tr><td>⚡ Speed</td><td>nur Tempo: Decode-t/s und Dauer</td></tr>
         <tr><td>✍️ Writing &amp; Scientific Writing</td><td>Schreib-Szenarien (Artikel, wissenschaftlicher Text) + Instruction-Following-Benchmarks</td></tr>
         <tr><td>🎨 Image Gen</td><td>Szenarien, in denen der Agent über das Tool <code>generate_image</code> Bilder erzeugt (Prompt-Umsetzung, Bildqualität, Schrift im Bild)</td></tr>
-        <tr><td>🧭 Routing (Laya)</td><td>Läufe über den LlamaDock-Router: Laya wählt pro Aufgabe Modell und Thinking-Stufe; bewertet wird das Ergebnis aller Szenarien</td></tr>
+        <tr><td>🖱️ Computer Use</td><td>Szenarien der Kategorie + externe GUI-Agent-Benchmarks (OSWorld-Verified, AndroidWorld, WebArena-Verified) aus den Model Cards</td></tr>
+        <tr><td>🧭 Routing</td><td>Läufe über den LlamaDock-Router (Auto-Routing): der Entscheider wählt pro Aufgabe Modell und Thinking-Stufe; bewertet wird das Ergebnis aller Szenarien. Ohne solche Läufe zeigt das Ranking die Entscheider aus dem Routing-Test.</td></tr>
       </tbody></table>
+      <p><b>Artificial Analysis Intelligence Index</b>: steht, wo vorhanden, bei den externen Werten der Modelle (unabhängig gemessen, <a href="https://artificialanalysis.ai/" rel="noopener">artificialanalysis.ai</a>). Er fließt nicht in den Score ein, weil nicht jedes Modell dort gelistet ist; ein Mittel aus Index und Model-Card-Werten wäre zwischen Modellen nicht vergleichbar.</p>
+
+      <h2 id="routing">Routing-Test und Entscheider</h2>
+      <p>Der Router von LlamaDock fragt ein kleines Entscheidungsmodell, wie schwer eine Aufgabe ist (Skala 0–3) und zu welchem Bereich sie gehört; daraus folgen Modell (klein/groß, Spezialprofil) und Thinking-Stufe. Dasselbe Modell prüft im Notebook-Modus, ob ein Beleg eine Aussage stützt, und dient Agents als Tool <code>decide</code> (z. B. Prompt-Injection-Prüfung).</p>
+      <p>Der <b>LlamaDock-Routing-Test</b> stellt jeder Engine dieselben Fragen: Aufgaben auf Deutsch und Englisch mit von Hand gesetzter Schwierigkeit und Bereich, Texte mit und ohne versteckte Anweisungen an eine KI, und Beleg-Aussage-Paare (gestützt / nicht gestützt). Gemessen werden die Trennschärfe (AUC) der Schwierigkeit für klein/groß, die Genauigkeit bei der verwendeten Schwelle, die Bereichs-Genauigkeit, AUC und Genauigkeit für Prompt Injection und Belege sowie die Latenz auf der CPU. Das Testset ist klein und von Hand beschriftet: ein Plausibilitätstest, kein Ersatz für einen großen Benchmark.</p>
+      <p>Extern steht daneben <b>JevBench</b> von Benchmark Heaven: 534 öffentliche und 308 versiegelte Entscheidungen, Score als harmonisches Mittel aus Intelligence, Calibration, Speed und Cost.</p>
     </div>
 
     <h2>Szenarien</h2>
